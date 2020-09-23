@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 847c9c82611dca742a7b411cab247d55, type: 3}
+  m_Name: Shotgun Time
+  m_EditorClassIdentifier: 
+  ost: {fileID: 8300000, guid: 2a49738a09740884ea1e706f868f005c, type: 3}
+  ambient_loop:
+  - {fileID: 8300000, guid: 9bb47787f6443a74fa5e12f8ac15e28a, type: 3}
+  - {fileID: 8300000, guid: d6885b05c462da443bf96a7d55a4b6d5, type: 3}
+  - {fileID: 8300000, guid: 4a9f25dcbc78c784b905f92a32dfdbdd, type: 3}
+  action_loop:
+  - loopStart: {fileID: 8300000, guid: 7d0de85fadf991f40a7677b32b47838b, type: 3}
+    loopBody: {fileID: 8300000, guid: 0d109ef75e964cb489c80cf95b47451f, type: 3}
+    loopEnd: {fileID: 8300000, guid: ff2c44410abd1794b921a8fbccbc5c4f, type: 3}
+  - loopStart: {fileID: 8300000, guid: afa1cddcedacf0649882d16bb69f57e7, type: 3}
+    loopBody: {fileID: 8300000, guid: 8b6b28158d0ab4149a2e74bc04be59c0, type: 3}
+    loopEnd: {fileID: 8300000, guid: ff2c44410abd1794b921a8fbccbc5c4f, type: 3}
+  - loopStart: {fileID: 8300000, guid: 62ab0161b8fd743458626cd2fe79a834, type: 3}
+    loopBody: {fileID: 8300000, guid: 04df6a18005238a45a3e116bd0eb50bb, type: 3}
+    loopEnd: {fileID: 8300000, guid: ff2c44410abd1794b921a8fbccbc5c4f, type: 3}
+  currActionLoop: 0

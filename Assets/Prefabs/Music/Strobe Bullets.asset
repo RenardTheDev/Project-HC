@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 847c9c82611dca742a7b411cab247d55, type: 3}
+  m_Name: Strobe Bullets
+  m_EditorClassIdentifier: 
+  ost: {fileID: 8300000, guid: 2a49738a09740884ea1e706f868f005c, type: 3}
+  ambient_loop:
+  - {fileID: 8300000, guid: efe2b28a093912d418b4c97692c966c3, type: 3}
+  action_loop:
+  - loopStart: {fileID: 8300000, guid: 24a31c3b41aba014bab47384dab78b55, type: 3}
+    loopBody: {fileID: 8300000, guid: 1c64f90a5a6a23b45ab2af008c0b29dd, type: 3}
+    loopEnd: {fileID: 8300000, guid: 4a652b45941c1ec46bb5b2bf761c2cce, type: 3}
+  - loopStart: {fileID: 8300000, guid: 24a31c3b41aba014bab47384dab78b55, type: 3}
+    loopBody: {fileID: 8300000, guid: 97d85d980d3c3824bbe87a9c2605d7a7, type: 3}
+    loopEnd: {fileID: 8300000, guid: 4a652b45941c1ec46bb5b2bf761c2cce, type: 3}
+  - loopStart: {fileID: 8300000, guid: 24a31c3b41aba014bab47384dab78b55, type: 3}
+    loopBody: {fileID: 8300000, guid: de23fcd0f2ac3b24997adcffc353724e, type: 3}
+    loopEnd: {fileID: 8300000, guid: 4a652b45941c1ec46bb5b2bf761c2cce, type: 3}
+  - loopStart: {fileID: 8300000, guid: 24a31c3b41aba014bab47384dab78b55, type: 3}
+    loopBody: {fileID: 8300000, guid: cba70bc987f9eb44699e2b4233273de6, type: 3}
+    loopEnd: {fileID: 8300000, guid: 4a652b45941c1ec46bb5b2bf761c2cce, type: 3}
+  currActionLoop: 1

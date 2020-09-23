@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 847c9c82611dca742a7b411cab247d55, type: 3}
+  m_Name: Sub Prime Organism
+  m_EditorClassIdentifier: 
+  ost: {fileID: 0}
+  ambient_loop:
+  - {fileID: 8300000, guid: 9bb47787f6443a74fa5e12f8ac15e28a, type: 3}
+  action_loop:
+  - loopStart: {fileID: 8300000, guid: 4764e57e263293848962063c97a81d6d, type: 3}
+    loopBody: {fileID: 8300000, guid: 870f0e02525c8284f999427d5a6bced1, type: 3}
+    loopEnd: {fileID: 8300000, guid: 821d6926d5ce68c4593c8aaec61075fc, type: 3}
+  currActionLoop: 0

@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags: []
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - 
+  - Water
+  - UI
+  - 
+  - 
+  - PostProcess
+  - Ship
+  - Hitbox
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Default
+    uniqueID: 0
+    locked: 0
+  - name: background
+    uniqueID: 113840253
+    locked: 0
+  - name: lowerEffect
+    uniqueID: 3521491647
+    locked: 0
+  - name: projectile
+    uniqueID: 2490323825
+    locked: 0
+  - name: ship
+    uniqueID: 1064371489
+    locked: 0
+  - name: asteroid
+    uniqueID: 2968567047
+    locked: 0
+  - name: effect
+    uniqueID: 1946871257
+    locked: 0
+  - name: UI
+    uniqueID: 276910155
+    locked: 0

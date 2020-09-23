@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 847c9c82611dca742a7b411cab247d55, type: 3}
+  m_Name: Future Warrior
+  m_EditorClassIdentifier: 
+  ost: {fileID: 8300000, guid: 0ab958dda43c69b40a6da28a559131fc, type: 3}
+  ambient_loop:
+  - {fileID: 8300000, guid: e10ae899a5c1b9c4eb148a3e5669e566, type: 3}
+  - {fileID: 8300000, guid: 04d298e12aa84e749982d221664aa2c5, type: 3}
+  - {fileID: 8300000, guid: 3cb450d98e73fcb4d8bbe251dade2130, type: 3}
+  action_loop:
+  - loopStart: {fileID: 8300000, guid: f327aab90105ca94397f91ab376b1fed, type: 3}
+    loopBody: {fileID: 8300000, guid: d838eb972a34ea74ba09143dcca9e1df, type: 3}
+    loopEnd: {fileID: 8300000, guid: a4894baa55b1f664890a35294df6eb49, type: 3}
+  - loopStart: {fileID: 8300000, guid: f327aab90105ca94397f91ab376b1fed, type: 3}
+    loopBody: {fileID: 8300000, guid: 74615648156d14643a716ba0eaf2b4f3, type: 3}
+    loopEnd: {fileID: 8300000, guid: a4894baa55b1f664890a35294df6eb49, type: 3}
+  - loopStart: {fileID: 8300000, guid: f327aab90105ca94397f91ab376b1fed, type: 3}
+    loopBody: {fileID: 8300000, guid: 5c3554afec70e204cb1641aea3662445, type: 3}
+    loopEnd: {fileID: 8300000, guid: a4894baa55b1f664890a35294df6eb49, type: 3}
+  currActionLoop: 0

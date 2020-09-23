@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 847c9c82611dca742a7b411cab247d55, type: 3}
+  m_Name: ConstantMarch
+  m_EditorClassIdentifier: 
+  ost: {fileID: 0}
+  ambient_loop:
+  - {fileID: 8300000, guid: e10ae899a5c1b9c4eb148a3e5669e566, type: 3}
+  action_loop:
+  - loopStart: {fileID: 8300000, guid: b626d8408bb6a7f40bb91c89eca71315, type: 3}
+    loopBody: {fileID: 8300000, guid: 1416ce6a98ccacf4ab90151b60e15e41, type: 3}
+    loopEnd: {fileID: 8300000, guid: ed3dc2ebcee51fb47bce92e77d32b564, type: 3}
+  currActionLoop: 0
