@@ -16,8 +16,8 @@ public class FixedJoystick : MonoBehaviour, IPointerDownHandler, IPointerUpHandl
     public float HandleRange = 1f;
 
     public Image circle;
-    public float circleAlpha_Pressed = 0.75f;
-    public float circleAlpha_Normal = 0.15f;
+    float circlePressed = 0;
+    public Gradient circleInteract;
 
     //[HideInInspector]
     public Vector2 InputVector = Vector2.zero;
@@ -35,6 +35,7 @@ public class FixedJoystick : MonoBehaviour, IPointerDownHandler, IPointerUpHandl
 
     private void Update()
     {
+        circle.color = circleInteract.Evaluate(circlePressed);
 
         switch (state)
         {
@@ -103,33 +104,26 @@ public class FixedJoystick : MonoBehaviour, IPointerDownHandler, IPointerUpHandl
         }
     }
 
-    Color tempCol;
     Coroutine fadeCircle;
     IEnumerator FadeCircle(bool show)
     {
         if (show)
         {
-            while (circle.color.a < circleAlpha_Pressed)
+            while (circlePressed < 1)
             {
-                tempCol = circle.color;
-                tempCol.a = Mathf.MoveTowards(tempCol.a, circleAlpha_Pressed, Time.deltaTime);
-                circle.color = tempCol;
+                circlePressed = Mathf.MoveTowards(circlePressed, 1, Time.deltaTime * 4);
                 yield return new WaitForEndOfFrame();
             }
-            tempCol.a = circleAlpha_Pressed;
-            circle.color = tempCol;
+            circlePressed = 1;
         }
         else
         {
-            while (circle.color.a > circleAlpha_Normal)
+            while (circlePressed > 0)
             {
-                tempCol = circle.color;
-                tempCol.a = Mathf.MoveTowards(tempCol.a, circleAlpha_Normal, Time.deltaTime);
-                circle.color = tempCol;
+                circlePressed = Mathf.MoveTowards(circlePressed, 0, Time.deltaTime * 2);
                 yield return new WaitForEndOfFrame();
             }
-            tempCol.a = circleAlpha_Normal;
-            circle.color = tempCol;
+            circlePressed = 0;
         }
 
         yield return new WaitForEndOfFrame();
