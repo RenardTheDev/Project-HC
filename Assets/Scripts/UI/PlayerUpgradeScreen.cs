@@ -9,7 +9,7 @@ public class PlayerUpgradeScreen : MonoBehaviour
     [HideInInspector] public Canvas canvas;
     public CanvasGroup group;
 
-    public Text label_cash;
+    //public Text label_cash;
 
     public UpgradeItemUI[] upgradeItems;
     public UpgradeWeaponUI[] upgradeWeapons;

@@ -300,15 +300,7 @@ public class GMSurvival : MonoBehaviour
         if (GameData.wave % saveEveryWave == 0)
         {
             PlayerShipUI.current.ShowCenterMSG($"Wave <color=white>#{GameData.wave}</color> complete!", 0.5f, 3f, NewWaveMSGColor);
-
-            GameData.SaveGame();
-
             yield return new WaitForSeconds(4f);
-            Time.timeScale = 0;
-            
-            //AdsManager.current.ShowAds();
-
-            yield return new WaitForSeconds(1f);
             PlayerShipUI.current.ShowCenterMSG($"Milestone achieved\nProgress saved", 0.5f, 3f, MilestoneMSGColor);
             yield return new WaitForSeconds(4f);
             PlayerShipUI.current.shipUpgrades.ToggleUpgradeScreen(true);
@@ -324,6 +316,9 @@ public class GMSurvival : MonoBehaviour
     public void StartWaveAfterUpgrades()
     {
         PlayerUpgradeScreen.current.ToggleUpgradeScreen(false);
+
+        if (GameData.wave % saveEveryWave == 0) GameData.SaveGame();
+
         StartCoroutine(StartNewWave());
     }
 

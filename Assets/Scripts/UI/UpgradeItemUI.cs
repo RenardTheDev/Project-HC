@@ -66,7 +66,6 @@ public class UpgradeItemUI : MonoBehaviour
         int currentLevel = Ship.PLAYER.shipUpgrades[(int)type];
         int level = currentLevel - 1;
         int cash = GameData.cash;
-        PlayerUpgradeScreen.current.label_cash.text = $"hc<color=white>*</color>{cash}";
 
         btn_upgrade.interactable = level < upg.maxlevel && cash >= (level + 1) * upg.cost;
         label_cost.text = level < upg.maxlevel ? $"{(level + 1) * upg.cost}" : "max";
