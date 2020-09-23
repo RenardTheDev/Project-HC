@@ -55680,7 +55680,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   canvas: {fileID: 0}
   group: {fileID: 137699025}
-  label_cash: {fileID: 1644362651}
   upgradeItems:
   - {fileID: 1771453962}
   - {fileID: 529969402}
@@ -55723,7 +55722,7 @@ Canvas:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1562496634}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_RenderMode: 0
   m_Camera: {fileID: 0}
