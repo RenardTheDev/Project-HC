@@ -54977,8 +54977,35 @@ MonoBehaviour:
   Handle: {fileID: 472014429}
   HandleRange: 1
   circle: {fileID: 1413583718}
-  circleAlpha_Pressed: 0.5
-  circleAlpha_Normal: 0.05
+  circleInteract:
+    serializedVersion: 2
+    key0: {r: 1, g: 1, b: 1, a: 0.050980393}
+    key1: {r: 1, g: 1, b: 1, a: 0.5019608}
+    key2: {r: 0, g: 0, b: 0, a: 0}
+    key3: {r: 0, g: 0, b: 0, a: 0}
+    key4: {r: 0, g: 0, b: 0, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 0
+    ctime1: 65535
+    ctime2: 0
+    ctime3: 0
+    ctime4: 0
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_NumColorKeys: 2
+    m_NumAlphaKeys: 2
   InputVector: {x: 0, y: 0}
 --- !u!1 &1416804281
 GameObject:
@@ -56387,7 +56414,7 @@ MonoBehaviour:
   skills:
   - {fileID: 11400000, guid: 746b7cca37d847a4b9d92a4be0d596eb, type: 2}
   - {fileID: 11400000, guid: dc59f4a32ff5080439c2102da39b3d56, type: 2}
-  enemyDamageMult: 0
+  enemyDamageMult: 0.2
   enemyHitboxScale: 2.5
   playerDamageMult: 2
   sfx_player_hit: {fileID: 8300000, guid: ee2cf15cd4c404b4eaec83d6b3a8a6e2, type: 3}
@@ -67101,8 +67128,35 @@ MonoBehaviour:
   Handle: {fileID: 1908293893}
   HandleRange: 1
   circle: {fileID: 1779526883}
-  circleAlpha_Pressed: 0.5
-  circleAlpha_Normal: 0.05
+  circleInteract:
+    serializedVersion: 2
+    key0: {r: 1, g: 1, b: 1, a: 0.050980393}
+    key1: {r: 1, g: 1, b: 1, a: 0.5019608}
+    key2: {r: 0, g: 0, b: 0, a: 0}
+    key3: {r: 0, g: 0, b: 0, a: 0}
+    key4: {r: 0, g: 0, b: 0, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 0
+    ctime1: 65535
+    ctime2: 0
+    ctime3: 0
+    ctime4: 0
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_NumColorKeys: 2
+    m_NumAlphaKeys: 2
   InputVector: {x: 0, y: 0}
 --- !u!114 &1779526883
 MonoBehaviour:
