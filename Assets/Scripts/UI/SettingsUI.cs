@@ -18,6 +18,7 @@ public class SettingsUI : MonoBehaviour
 
     public Slider slider_music;
     public Slider slider_sfx;
+    public Toggle toggle_controls;
 
     public Text label_music;
     public Text label_sfx;
@@ -31,6 +32,7 @@ public class SettingsUI : MonoBehaviour
 
         slider_music.onValueChanged.AddListener(OnMusicVolumeUpdated);
         slider_sfx.onValueChanged.AddListener(OnSFXVolumeUpdated);
+        toggle_controls.onValueChanged.AddListener(OnControlsTypeChange);
     }
 
     private void Start()
@@ -41,6 +43,7 @@ public class SettingsUI : MonoBehaviour
 
         slider_music.value = settings.volume_music;
         slider_sfx.value = settings.volume_sfx;
+        toggle_controls.isOn = settings.useNewControls;
     }
 
     private void Update()
@@ -74,6 +77,12 @@ public class SettingsUI : MonoBehaviour
             globalMixer.SetFloat("vol_sfx", -80);
             label_sfx.text = "OFF";
         }
+    }
+
+    void OnControlsTypeChange(bool state)
+    {
+        settings.useNewControls = state;
+        GlobalEvents.ControlsChanged(state);
     }
 
     public void ToggleSettingsWindow(bool toggle)
@@ -174,10 +183,12 @@ public class GameSettings
 {
     public float volume_music;
     public float volume_sfx;
+    public bool useNewControls;
 
     public GameSettings()
     {
         volume_music = 1;
         volume_sfx = 1;
+        useNewControls = true;
     }
 }

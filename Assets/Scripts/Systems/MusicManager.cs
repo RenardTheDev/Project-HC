@@ -21,6 +21,8 @@ public class MusicManager : MonoBehaviour
     bool startinActionLoop;
     double actionLoopChangeTime;
 
+    bool isAction;
+
     Coroutine ambient;
     Coroutine action;
     Coroutine themeChange;
@@ -46,11 +48,11 @@ public class MusicManager : MonoBehaviour
 
     private void OnShipKilled(Damage data)
     {
-        if (data.victim.isHunter)
+        /*if (data.victim.isHunter)
         {
             if (themeChange != null) StopCoroutine(themeChange);
             themeChange = StartCoroutine(ChangeTheme(2f, theme_normal[Random.Range(0, theme_normal.Length)]));
-        }
+        }*/
     }
 
     private void OnShipGetHit(Damage data)
@@ -211,7 +213,7 @@ public class MusicManager : MonoBehaviour
         {
             src_action[flip].volume = Mathf.MoveTowards(src_action[flip].volume, 0, Time.deltaTime * musicVolume);
 
-            if (src_action[flip].volume / musicVolume < 0.5f && !src_endpoint.isPlaying)
+            if (src_action[flip].volume / musicVolume < 0.5f && !src_endpoint.isPlaying && playEndpoint)
             {
                 src_endpoint.clip = currTheme.action_loop[currTheme.currActionLoop].loopEnd;
                 src_endpoint.Play();

@@ -31,11 +31,11 @@ MonoBehaviour:
   levelCost: 100
   level: 1
   projectile:
-    speed: 50
-    distance: 50
-    radius: 0.4
+    speed: 40
+    distance: 60
+    radius: 0.25
     color: {r: 0.90588236, g: 0.29803923, b: 0.23529412, a: 1}
     impact: 2
-  reloadDelay: 0.25
+  reloadDelay: 0.3
   clipSize: 3
   clip: 3

@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: bg 1
-  m_Shader: {fileID: 4800000, guid: 0aa7b777155838b4d959e21af5c24318, type: 3}
+  m_Shader: {fileID: 4800000, guid: 9154443ac5bd9ea4bb5090c622dd32b4, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -40,8 +40,8 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
+        m_Texture: {fileID: 2800000, guid: c2f7fa2eb89a2184387cf7aad15d5c88, type: 3}
+        m_Scale: {x: 5, y: 5}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
         m_Texture: {fileID: 0}
@@ -56,6 +56,8 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
+    - _AreaSize: 1000
+    - _BorderSize: 0.5
     - _BumpScale: 1
     - _Cutoff: 0.5
     - _Delay: 1
@@ -74,9 +76,8 @@ Material:
     - _SrcBlend: 1
     - _UVSec: 0
     - _ZWrite: 1
-    - _lower: 0.005
-    - _upper: 0.01
     m_Colors:
     - _Color: {r: 0.5019608, g: 0.5019608, b: 0.5019608, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _Overlay: {r: 0, g: 0.2901961, b: 1, a: 1}
+    - _OutColor: {r: 0.5019608, g: 0, b: 0, a: 1}
+    - _Overlay: {r: 1, g: 1, b: 1, a: 1}

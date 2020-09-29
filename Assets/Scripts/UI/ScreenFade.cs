@@ -17,9 +17,13 @@ public class ScreenFade : MonoBehaviour
     private void Awake()
     {
         curr = this;
+        fade = 1;
         SetColor();
+    }
 
-        StartCoroutine(FadeOUTCor(1f, 1f));
+    private void Start()
+    {
+        FadeINOUT(0f, 0f, 1f, 1f);
     }
 
     public void FadeIN(float delay, float time)

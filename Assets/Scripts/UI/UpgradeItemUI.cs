@@ -67,8 +67,7 @@ public class UpgradeItemUI : MonoBehaviour
         int level = currentLevel - 1;
         int cash = GameData.cash;
 
-        btn_upgrade.interactable = level < upg.maxlevel && cash >= (level + 1) * upg.cost;
-        label_cost.text = level < upg.maxlevel ? $"{(level + 1) * upg.cost}" : "max";
+        btn_upgrade.interactable = currentLevel < upg.maxlevel && cash >= currentLevel * upg.cost;
 
         switch (type)
         {
@@ -86,26 +85,61 @@ public class UpgradeItemUI : MonoBehaviour
                 break;
             case UpgradeType.health:
                 label_name.text = $"{upg.Name}\n{100 + upg.increment * level}";
-                label_cost.text = $"{upg.cost * currentLevel} hc\n+{upg.increment}";
+                if (currentLevel < upg.maxlevel)
+                {
+                    label_cost.text = $"{upg.cost * currentLevel} hc\n+{upg.increment}";
+                }
+                else
+                {
+                    label_cost.text = "Max level reached";
+                }
                 break;
             /*case UpgradeType.hp_pickup:
                 label_cost.text = $"+{upg.increment * level}";
                 break;*/
             case UpgradeType.shield:
                 label_name.text = $"{upg.Name}\n{upg.increment * level}";
-                label_cost.text = $"{upg.cost * currentLevel} hc\n+{upg.increment}";
+                if (currentLevel < upg.maxlevel)
+                {
+                    label_cost.text = $"{upg.cost * currentLevel} hc\n+{upg.increment}";
+                }
+                else
+                {
+                    label_cost.text = "Max level reached";
+                }
                 break;
             case UpgradeType.sh_regen:
                 label_name.text = $"{upg.Name}\n{1f + upg.increment * level} / sec";
-                label_cost.text = $"{upg.cost * currentLevel}\n+{upg.increment} / sec";
+                if (currentLevel < upg.maxlevel)
+                {
+                    label_cost.text = $"{upg.cost * currentLevel}\n+{upg.increment} / sec";
+                }
+                else
+                {
+                    label_cost.text = "Max level reached";
+                }
                 break;
             case UpgradeType.speed:
                 label_name.text = $"{upg.Name}\n{50 + 0.5f * upg.increment * level}";
-                label_cost.text = $"{upg.cost * currentLevel} hc\n+{upg.increment}%";
+                if (currentLevel < upg.maxlevel)
+                {
+                    label_cost.text = $"{upg.cost * currentLevel} hc\n+{upg.increment}%";
+                }
+                else
+                {
+                    label_cost.text = "Max level reached";
+                }
                 break;
             case UpgradeType.resist:
                 label_name.text = $"{upg.Name}\n{upg.increment * level}%";
-                label_cost.text = $"{upg.cost * currentLevel} hc\n+{upg.increment}%";
+                if (currentLevel < upg.maxlevel)
+                {
+                    label_cost.text = $"{upg.cost * currentLevel} hc\n+{upg.increment}%";
+                }
+                else
+                {
+                    label_cost.text = "Max level reached";
+                }
                 break;
             /*case UpgradeType.damage:
                 label_name.text = $"{upg.Name}\n{upg.increment * level}";
@@ -116,9 +150,14 @@ public class UpgradeItemUI : MonoBehaviour
                 break;*/
             case UpgradeType.guns:
                 label_name.text = $"{upg.Name} * {currentLevel}";
-                label_cost.text = $"{upg.cost * currentLevel} hc\n+{upg.increment}";
-
-                btn_upgrade.interactable = (level + 1) < upg.maxlevel && cash >= (level + 1) * upg.cost;
+                if (currentLevel < upg.maxlevel)
+                {
+                    label_cost.text = $"{upg.cost * currentLevel} hc\n+{upg.increment}";
+                }
+                else
+                {
+                    label_cost.text = "Max level reached";
+                }
                 break;
         }
     }

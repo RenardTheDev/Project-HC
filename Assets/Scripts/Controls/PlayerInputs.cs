@@ -29,6 +29,14 @@ public class PlayerInputs : MonoBehaviour
     private void Awake()
     {
         current = this;
+
+        GlobalEvents.OnControlsChanged += OnControlsChanged;
+    }
+
+    private void OnControlsChanged(bool state)
+    {
+        t_aimShoot.gameObject.SetActive(state);
+        t_fire.gameObject.SetActive(!state);
     }
 
     private void Update()

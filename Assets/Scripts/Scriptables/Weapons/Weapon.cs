@@ -69,7 +69,7 @@ public class Weapon : ScriptableObject
 
         lvld_fireRate = fireRate + (lvl * 0.01f * fireRate);
         lvld_damage = damage + (lvl * 0.05f * damage);
-        lvld_spread = Mathf.Clamp(spread - (lvl * 0.05f * spread), 0, float.MaxValue);
+        lvld_spread = Mathf.Clamp(spread - (lvl * 0.01f * spread), 0, float.MaxValue);
     }
 }
 

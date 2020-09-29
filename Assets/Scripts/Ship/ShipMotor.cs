@@ -37,36 +37,38 @@ public class ShipMotor : MonoBehaviour
     Vector2 rotationTargetNormal;
     public float turnSmoothTime = 0.1f;
     public float turnSmoothVelocity;
-    public float lastAimed;
+    //public float lastAimed;
     public bool rotateToMovement;
     private void FixedUpdate()
     {
-        if (ship.isPlayer)
+        if (ship.isPlayer && SettingsUI.current.settings.useNewControls)
         {
             rotationTarget = rotateToMovement ? move : aim;
             if (rotationTarget.magnitude > 0.1f)
             {
-                rotationTargetNormal = rotationTarget.normalized;
-                targetAngle = Mathf.Atan2(-rotationTargetNormal.x, rotationTargetNormal.y) * Mathf.Rad2Deg;
-                angle = Mathf.SmoothDampAngle(transform.eulerAngles.z, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
-
+                if (rotateToMovement)
+                {
+                    rotationTargetNormal = rotationTarget.normalized;
+                    targetAngle = Mathf.Atan2(-rotationTargetNormal.x, rotationTargetNormal.y) * Mathf.Rad2Deg;
+                    angle = Mathf.SmoothDampAngle(transform.eulerAngles.z, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
+                }
+                else
+                {
+                    rotationTargetNormal = rotationTarget.normalized;
+                    angle = Mathf.Atan2(-rotationTargetNormal.x, rotationTargetNormal.y) * Mathf.Rad2Deg;
+                }
             }
 
-            if (aim.magnitude>0.1f)
+            if (aim.magnitude > 0.1f)
             {
-                lastAimed = Time.time;
                 rotateToMovement = false;
             }
             else
             {
-                if (Time.time > lastAimed + 5)
-                {
-                    rotateToMovement = true;
-                }
+                rotateToMovement = true;
             }
 
             transform.rotation = Quaternion.Euler(0, 0, angle);
-
             if (move.magnitude > 0.1f)
             {
                 if (rig.velocity.magnitude < maxSpeed)

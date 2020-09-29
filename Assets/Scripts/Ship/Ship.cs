@@ -188,14 +188,27 @@ public class Ship : MonoBehaviour
 
         if (attacker.isPlayer && !isPlayer)
         {
-            dmg.hp = dmg.hp * GameManager._playerDamageMult;
+            if (isHunter)
+            {
+                dmg.hp = dmg.hp * GameManager._enemyDamageMult;
+            }
+            else
+            {
+                dmg.hp = dmg.hp * GameManager._playerDamageMult;
+            }
         }
         else if (!attacker.isPlayer && isPlayer)
         {
             dmg.hp = dmg.hp * GameManager._enemyDamageMult;
         }
 
-        dmg.hp = dmg.hp * dmg.attacker.damageMult - dmg.hp * damageResist;
+        dmg.hp = dmg.hp - dmg.hp * damageResist;
+
+        int enemyGuns = dmg.attacker.shipUpgrades[(int)UpgradeType.guns];
+        if (enemyGuns > 1)
+        {
+            dmg.hp = dmg.hp - dmg.hp * 0.25f * (enemyGuns - 1);
+        }
 
         if (shield > dmg.hp)
         {

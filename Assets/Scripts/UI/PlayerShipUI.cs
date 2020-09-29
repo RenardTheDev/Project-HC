@@ -105,26 +105,6 @@ public class PlayerShipUI : MonoBehaviour
         //--------------
 
         //--- score ---
-        /*int pScore = GameData.score;
-        float diff = Mathf.Abs(pScore - score_show);
-        int digits = Mathf.Clamp($"{diff:0}".Length - 1, 1, 5);
-
-        score_show = Mathf.MoveTowards(score_show, pScore, Mathf.Pow(10, digits) * Time.deltaTime * 10);
-
-        digits = $"{score_show:0}".Length;
-
-        score_field.text = "";
-        if (9 - digits > 0)
-        {
-            score_field.text = "<color=grey>";
-            for (int i = 0; i < 9 - digits; i++)
-            {
-                score_field.text += "0";
-            }
-            score_field.text += "</color>";
-        }
-        score_field.text += $"{score_show:0}";*/
-
         int pScore = GameData.score;
         score_show = Mathf.CeilToInt(Mathf.Lerp(score_show, pScore, Time.deltaTime * 10));
         int digits = $"{score_show:0}".Length;
@@ -142,7 +122,7 @@ public class PlayerShipUI : MonoBehaviour
 
         int pCash = GameData.cash;
         cash_show = Mathf.Lerp(cash_show, pCash, Time.deltaTime * 10);
-        cash_field.text = $"{cash_show:0}HC";
+        cash_field.text = $"{cash_show:0} <size={(int)(cash_field.fontSize * 0.75f)}>HC</size>";
         //-------------
 
         //--- combo ---
@@ -185,8 +165,8 @@ public class PlayerShipUI : MonoBehaviour
 
         if (showTime >= 0)
         {
-            colorRoll = colorRoll_gradient.Evaluate(Mathf.Sin(showTime));
-            showTime += Time.deltaTime;
+            colorRoll = colorRoll_gradient.Evaluate((Mathf.Sin(showTime) + 1) * 0.5f);
+            showTime += Time.deltaTime * 4;
             center_msg.color = colorRoll;
         }
     }
@@ -207,8 +187,62 @@ public class PlayerShipUI : MonoBehaviour
     public Canvas ui_pauseScreen;
     public Canvas ui_respawn;
 
-    public void ToggleControls(bool enable) { ui_controls.enabled = enable; }
-    public void ToggleGameplayUI(bool enable) { ui_gameplay.enabled = enable; }
+    [Header("Canvas groupes")]
+    public CanvasGroup gr_gameplay;
+    public CanvasGroup gr_controls;
+
+    public void ToggleControls(bool enable, bool instant = false)
+    {
+        if (instant)
+        {
+            ui_controls.enabled = enable;
+            gr_controls.alpha = enable ? 1 : 0;
+        }
+        else
+        {
+            StartCoroutine(UIGroupFader(ui_controls, gr_controls, enable));
+        }
+    }
+
+    public void ToggleGameplayUI(bool enable, bool instant = false)
+    {
+        if (instant)
+        {
+            ui_gameplay.enabled = enable;
+            gr_gameplay.alpha = enable ? 1 : 0;
+        }
+        else
+        {
+            StartCoroutine(UIGroupFader(ui_gameplay, gr_gameplay, enable));
+        }
+    }
+
+    Coroutine uiFadeCor;
+    IEnumerator UIGroupFader(Canvas ui, CanvasGroup group, bool show)
+    {
+        if (show)
+        {
+            ui.enabled = true;
+            group.alpha = 0;
+            while (group.alpha < 1f)
+            {
+                group.alpha = Mathf.MoveTowards(group.alpha, 1, Time.unscaledDeltaTime * 2);
+                yield return new WaitForEndOfFrame();
+            }
+            group.alpha = 1;
+        }
+        else
+        {
+            group.alpha = 1;
+            while (group.alpha > 0)
+            {
+                group.alpha = Mathf.MoveTowards(group.alpha, 0, Time.unscaledDeltaTime * 2);
+                yield return new WaitForEndOfFrame();
+            }
+            group.alpha = 0;
+            ui.enabled = false;
+        }
+    }
     public void ToggleStartScreen(bool enable) { ui_startScreen.enabled = enable; }
     public void ToggleGameoverScreen(bool enable)
     {
@@ -228,6 +262,7 @@ public class PlayerShipUI : MonoBehaviour
         showTime = -1;
         cMSG_cor = StartCoroutine(CenterMSGPopup(text, speed, hold, color));
     }
+
     public void ShowCenterMSG(string text, float speed, float hold, Gradient color)
     {
         if (cMSG_cor != null)

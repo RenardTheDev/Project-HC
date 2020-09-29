@@ -22,24 +22,24 @@ MonoBehaviour:
   ui_prefab: {fileID: 3225970232796110572, guid: ee37866ad8a491e4cafa69795d0c5aec,
     type: 3}
   damage: 6
-  fireRate: 1000
-  spread: 4
+  fireRate: 800
+  spread: 5
   lvld_damage: 6
-  lvld_fireRate: 1000
-  lvld_spread: 4
+  lvld_fireRate: 800
+  lvld_spread: 5
   BuyCost: 1000
-  levelCost: 100
+  levelCost: 200
   level: 1
   projectile:
-    speed: 40
+    speed: 60
     distance: 40
-    radius: 0.5
+    radius: 0.25
     color: {r: 1, g: 0.7843138, b: 0.19607845, a: 1}
     impact: 2
   heat: 0
   hIncrement: 0.006
   coolSpeed: 0.5
-  cdDelay: 1
+  cdDelay: 0.5
   overHeated: 0
   fireRateOverHeat:
     serializedVersion: 2
@@ -54,7 +54,7 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 0.4
+      time: 0.5
       value: 1
       inSlope: 0
       outSlope: 0
@@ -64,12 +64,12 @@ MonoBehaviour:
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 1
-      value: 2
-      inSlope: 5.2944517
-      outSlope: 5.2944517
+      value: 4
+      inSlope: 11.701066
+      outSlope: 11.701066
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.1025175
+      inWeight: 0.050793648
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2

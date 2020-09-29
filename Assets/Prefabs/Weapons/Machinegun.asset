@@ -28,14 +28,14 @@ MonoBehaviour:
   lvld_fireRate: 600
   lvld_spread: 1
   BuyCost: 1000
-  levelCost: 100
+  levelCost: 150
   level: 1
   projectile:
     speed: 50
     distance: 50
-    radius: 0.5
+    radius: 0.25
     color: {r: 0.6862745, g: 0.86274517, b: 0.95294124, a: 1}
     impact: 2
-  reloadDelay: 0.5
-  clip: 10
-  clipSize: 10
+  reloadDelay: 1
+  clip: 30
+  clipSize: 30

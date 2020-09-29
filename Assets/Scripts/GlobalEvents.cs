@@ -79,4 +79,11 @@ public class GlobalEvents : MonoBehaviour
     {
         OnGameOver?.Invoke();
     }
+
+    //---settings---
+    public static event Action<bool> OnControlsChanged;
+    public static void ControlsChanged(bool state)
+    {
+        OnControlsChanged?.Invoke(state);
+    }
 }

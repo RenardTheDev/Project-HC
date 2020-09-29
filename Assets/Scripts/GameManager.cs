@@ -28,12 +28,14 @@ public class GameManager : MonoBehaviour
     public List<SkillBase> skills;
 
     [Header("Difficulty")]
-    public static float _enemyDamageMult = 1.0f;
     public static float _enemyHitboxScale = 1.5f;
+    public static float _enemyDamageMult = 1.0f;
     public static float _playerDamageMult = 1.0f;
-    public float enemyDamageMult = 1.0f;
+    public static float _playerCashMult = 1.0f;
     public float enemyHitboxScale = 1.5f;
+    public float enemyDamageMult = 1.0f;
     public float playerDamageMult = 1.0f;
+    public float playerCashMult = 1.0f;
 
     //--- records ---
     public static PlayerRecords records;
@@ -80,6 +82,7 @@ public class GameManager : MonoBehaviour
         _enemyDamageMult = enemyDamageMult;
         _playerDamageMult = playerDamageMult;
         _enemyHitboxScale = enemyHitboxScale;
+        _playerCashMult = playerCashMult;
     }
 
     private void OnShipKilled(Damage data)
@@ -175,7 +178,7 @@ public class GameManager : MonoBehaviour
     {
         int value = Mathf.CeilToInt(Mathf.Clamp(score, 0, int.MaxValue));
         GameData.score += value;
-        GameData.cash += value;
+        GameData.cash += Mathf.CeilToInt(value * _playerCashMult);
     }
 
     private void Update()
@@ -267,8 +270,8 @@ public class GameManager : MonoBehaviour
         {
             gameState = GameState.pause;
             Time.timeScale = 0;
-            PlayerShipUI.current.ToggleControls(false);
-            PlayerShipUI.current.ToggleGameplayUI(false);
+            PlayerShipUI.current.ToggleControls(false, true);
+            PlayerShipUI.current.ToggleGameplayUI(false, true);
             PlayerShipUI.current.TogglePauseScreen(true);
 
             pauseSnapShots[1].TransitionTo(0.1f);
@@ -277,8 +280,8 @@ public class GameManager : MonoBehaviour
         {
             gameState = GameState.game;
             Time.timeScale = 1;
-            PlayerShipUI.current.ToggleControls(true);
-            PlayerShipUI.current.ToggleGameplayUI(true);
+            PlayerShipUI.current.ToggleControls(true, true);
+            PlayerShipUI.current.ToggleGameplayUI(true, true);
             PlayerShipUI.current.TogglePauseScreen(false);
 
             pauseSnapShots[0].TransitionTo(1f);

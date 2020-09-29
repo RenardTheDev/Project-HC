@@ -46,22 +46,22 @@ public class ShipUpgrade
 
             case UpgradeType.sh_regen:
                 Name = "shield regen";
-                cost = 250;
-                increment = 0.25f;
+                cost = 200;
+                increment = 0.20f;
                 break;
 
             case UpgradeType.speed:
                 Name = "move speed";
-                cost = 250;
+                cost = 300;
                 increment = 5f;
-                maxlevel = 50;
+                maxlevel = 12;
                 break;
 
             case UpgradeType.resist:
                 Name = "damage resistance";
                 cost = 750;
-                increment = 3f;
-                maxlevel = 33;
+                increment = 1f;
+                maxlevel = 51;
                 break;
 
             case UpgradeType.damage:
@@ -79,7 +79,7 @@ public class ShipUpgrade
 
             case UpgradeType.guns:
                 Name = "gun on board";
-                cost = 25000;
+                cost = 30000;
                 increment = 1f;
                 maxlevel = 3;
                 break;

@@ -334,13 +334,13 @@ public class GMSurvival : MonoBehaviour
         {
             PlayerShipUI.current.ShowCenterMSG(
                 $"Warning, HUNTER incoming!\n" +
-                $"<color={ColorUtility.ToHtmlStringRGB(NewWaveMSGColor)}>Wave <color=white>#{GameData.wave}</color></color>",
-                0.5f, 3f, NewWaveMSGColor);
+                $"<color=#{ColorUtility.ToHtmlStringRGB(NewWaveMSGColor)}>Wave <color=white>#{GameData.wave}</color></color>",
+                0.5f, 3f, WarningColor);
         }
         else
         {
             PlayerShipUI.current.ShowCenterMSG(
-                $"<color={ColorUtility.ToHtmlStringRGB(NewWaveMSGColor)}>Wave <color=white>#{GameData.wave}</color> incoming!</color>",
+                $"<color=#{ColorUtility.ToHtmlStringRGB(NewWaveMSGColor)}>Wave <color=white>#{GameData.wave}</color> incoming!</color>",
                 0.5f, 3f, NewWaveMSGColor);
         }
         enemiesLeft = enemiesForWave;

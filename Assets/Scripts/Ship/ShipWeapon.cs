@@ -35,11 +35,6 @@ public class ShipWeapon : MonoBehaviour
                 }
             }
         }
-
-        if (gun != null)
-        {
-            gun.Update();
-        }
     }
 
     public void AssignSkill(SkillBase newSkill)
@@ -72,6 +67,7 @@ public class ShipWeapon : MonoBehaviour
         if (gun != null)
         {
             if (trigger) gun.Trigger();
+            gun.Update();
         }
 
         if (skill != null)

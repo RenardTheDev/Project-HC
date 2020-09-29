@@ -14,6 +14,7 @@ public class Minigun : Weapon
     public float cdDelay = 0.25f;
 
     public bool overHeated;
+    bool shooting;
 
     public AnimationCurve fireRateOverHeat;
     public AnimationCurve spreadOverHeat;
@@ -33,11 +34,15 @@ public class Minigun : Weapon
 
     public override void Trigger()
     {
-        base.Trigger();
+        /*base.Trigger();
 
         if (Time.time - lastShot > ((60f / lvld_fireRate) * fireRateOverHeat.Evaluate(heat)) / owner.shipUpgrades[(int)UpgradeType.guns] && !overHeated)
         {
             MakeShot();
+        }*/
+        if (!shooting)
+        {
+            shooting = true;
         }
     }
 
@@ -49,7 +54,6 @@ public class Minigun : Weapon
     public override void Update()
     {
         base.Update();
-
 
         if (Time.time - lastShot > cdDelay)
         {
@@ -67,9 +71,22 @@ public class Minigun : Weapon
             owner.sfx_source.PlayOneShot(sfx, volume);
             playSFX = false;
         }
+
+        if (shooting)
+        {
+            if (owner.isAlive && Time.time > lastShot + ((60f / lvld_fireRate) * fireRateOverHeat.Evaluate(heat)) / owner.shipUpgrades[(int)UpgradeType.guns] && !overHeated)
+            {
+                for (int g = 0; g < owner.shipUpgrades[(int)UpgradeType.guns]; g++)
+                {
+                    _makeShot();
+                }
+
+                shooting = false;
+            }
+        }
     }
 
-    public void MakeShot()
+    public void _makeShot()
     {
         float shotDeviation = Random.Range(-1.0f, 1.0f) * lvld_spread * spreadOverHeat.Evaluate(heat);
 
