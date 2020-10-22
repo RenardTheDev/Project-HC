@@ -72,6 +72,14 @@ public class AsteroidSystem : MonoBehaviour
         aster.Spawn(pos, shootToPlayer);
     }
 
+    public void HideAsteroids()
+    {
+        for (int i = 0; i < activeList.Count; i++)
+        {
+            activeList[i].Despawn();
+        }
+    }
+
     Asteroid GetAsteroid(AsteroidSize size)
     {
         if (inactiveDict[size].Count > 0)
@@ -108,11 +116,6 @@ public class AsteroidSystem : MonoBehaviour
         activeList.Add(shot);
 
         return shot;
-    }
-
-    public void ClearAsteroids()
-    {
-
     }
 }
 

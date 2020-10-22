@@ -7,8 +7,6 @@ public class MusicManager : MonoBehaviour
     public static MusicManager current;
 
     public MusicTheme[] theme_normal;
-    public MusicTheme[] theme_hunter;
-    public MusicTheme[] theme_badSituation;
 
     public MusicTheme currTheme;
 
@@ -24,10 +22,8 @@ public class MusicManager : MonoBehaviour
     bool isAction;
 
     Coroutine ambient;
-    Coroutine action;
-    Coroutine themeChange;
-
-    WaveType currWaveType = WaveType.normal;
+    //Coroutine action;
+    //Coroutine themeChange;
 
     [Header("Blend timings")]
     public float ambientStartUpTime = 5f;
@@ -37,22 +33,39 @@ public class MusicManager : MonoBehaviour
     {
         current = this;
 
-        GlobalEvents.OnRoundStarted += OnRoundStarted;
-        GlobalEvents.OnRoundEnded += OnRoundEnded;
         GlobalEvents.OnGameOver += OnGameOver;
         GlobalEvents.onShipGetHit += OnShipGetHit;
         GlobalEvents.onShipKilled += OnShipKilled;
+        GlobalEvents.OnGameStateChanged += OnGameStateChanged;
 
         currTheme = theme_normal[0];
+    }
+    private void Start()
+    {
+        StartCoroutine(ChangeTheme(false, theme_normal[Random.Range(0, theme_normal.Length)]));
+    }
+
+    private void OnGameStateChanged(GameState state)
+    {
+        switch (state)
+        {
+            case GameState.MainMenu:
+                StartCoroutine(StopAction(true, true));
+                break;
+            case GameState.Game:
+                //StartCoroutine(StartAction(true));
+                StartCoroutine(ChangeTheme(true, theme_normal[Random.Range(0, theme_normal.Length)]));
+                break;
+            case GameState.Pause:
+                break;
+            default:
+                break;
+        }
     }
 
     private void OnShipKilled(Damage data)
     {
-        /*if (data.victim.isHunter)
-        {
-            if (themeChange != null) StopCoroutine(themeChange);
-            themeChange = StartCoroutine(ChangeTheme(2f, theme_normal[Random.Range(0, theme_normal.Length)]));
-        }*/
+
     }
 
     private void OnShipGetHit(Damage data)
@@ -60,52 +73,13 @@ public class MusicManager : MonoBehaviour
 
     }
 
-    private void Start()
-    {
-        ambient = StartCoroutine(StartAmbient());
-    }
-
-    private void OnRoundStarted(WaveType waveType)
-    {
-        Debug.Log("OnRoundStarted");
-
-        currWaveType = waveType;
-
-        switch (waveType)
-        {
-            case WaveType.normal:
-                currTheme = theme_normal[Random.Range(0, theme_normal.Length)];
-                break;
-            case WaveType.hunter:
-                currTheme = theme_hunter[Random.Range(0, theme_hunter.Length)];
-                break;
-        }
-
-        if (ambient != null) StopCoroutine(ambient);
-        ambient = StartCoroutine(StopAmbient());
-
-        if (action != null) StopCoroutine(action);
-        action = StartCoroutine(StartAction(true));
-    }
-
-    private void OnRoundEnded()
-    {
-        if (themeChange != null) StopCoroutine(themeChange);
-        StartCoroutine(StopAction(true,true));
-    }
-
     private void OnGameOver()
     {
-        if (themeChange != null) StopCoroutine(themeChange);
-        StartCoroutine(StopAction(true, true));
+
     }
 
     public void StopAction()
     {
-        if (themeChange != null) StopCoroutine(themeChange);
-        if (ambient != null) StopCoroutine(ambient);
-        if (action != null) StopCoroutine(action);
-
         StartCoroutine(StopAction(true, true));
     }
 
@@ -158,6 +132,9 @@ public class MusicManager : MonoBehaviour
 
     IEnumerator StartAction(bool useStarter)
     {
+        if (ambient != null) StopCoroutine(ambient);
+        StartCoroutine(StopAmbient());
+
         if (useStarter)
         {
             currTheme.currActionLoop = Random.Range(0, currTheme.action_loop.Length);
@@ -235,12 +212,16 @@ public class MusicManager : MonoBehaviour
         }
     }
 
-    IEnumerator ChangeTheme(float delay, MusicTheme newTheme)
+    IEnumerator ChangeTheme(bool startAction, MusicTheme newTheme)
     {
-        yield return new WaitForSecondsRealtime(delay);
-
-        yield return StartCoroutine(StopAction(false,false));
         currTheme = newTheme;
-        yield return StartCoroutine(StartAction(false));
+        if (startAction)
+        {
+            yield return StartCoroutine(StartAction(true));
+        }
+        else
+        {
+            yield return ambient = StartCoroutine(StartAmbient());
+        }
     }
 }

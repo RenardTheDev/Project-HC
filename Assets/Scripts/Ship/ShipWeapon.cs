@@ -52,14 +52,14 @@ public class ShipWeapon : MonoBehaviour
 
         ship.equippedWeapID = newWeapon.WEAPON_ID;
 
-        gun.SetLevel(ship.weapUpgrades[newWeapon.WEAPON_ID]);
+        //gun.SetLevel(ship.weapUpgrades[newWeapon.WEAPON_ID]);
 
         if (ship.isPlayer) GlobalEvents.PlayerWeaponChanged(gun);
     }
 
     public void UpdateWeaponUpgrade()
     {
-        gun.SetLevel(ship.weapUpgrades[gun.WEAPON_ID]);
+        //gun.SetLevel(ship.weapUpgrades[gun.WEAPON_ID]);
     }
 
     private void FixedUpdate()

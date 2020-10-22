@@ -18,10 +18,15 @@ public class ShipTag : MonoBehaviour
 
     public Image ui_health;
     public Image ui_shield;
-    public Image ui_Hunter;
+    public Image ui_target;
+
+    public Text nameTag;
+
+    Camera cam;
 
     private void Awake()
     {
+        cam = Camera.main;
         rt_tag = GetComponent<RectTransform>();
     }
 
@@ -32,12 +37,17 @@ public class ShipTag : MonoBehaviour
 
         point = Camera.main.WorldToViewportPoint(t_trans.position);
         isOnScreen = point.x > 0f && point.x < 1f && point.y > 0f && point.y < 1f;
+        farAway = cam.orthographicSize > 30;
 
-        go_target.SetActive(!isOnScreen);
-        go_health.SetActive(isOnScreen);
-        go_shield.SetActive(isOnScreen && t_ship.maxShield > 0);
+        go_target.SetActive(!isOnScreen || farAway);
+        go_health.SetActive(isOnScreen && !farAway);
+        go_shield.SetActive(isOnScreen && !farAway && t_ship.maxShield > 0);
+        nameTag.gameObject.SetActive(isOnScreen && !farAway);
 
-        ui_Hunter.enabled = t_ship.isHunter;
+        nameTag.text = t_ship.Name;
+        nameTag.color = GameManager.current.team[t_ship.teamID].teamColor;
+        ui_target.color= GameManager.current.team[t_ship.teamID].teamColor;
+        go_target.transform.rotation = Quaternion.Euler(0, 0, t_ship.teamID == 0 ? 0 : 45);
 
         UpdatePosition();
     }
@@ -51,10 +61,12 @@ public class ShipTag : MonoBehaviour
     }
 
     Vector3 pos;
-    Vector3 point;
+    Vector2 point;
 
     bool _onScreen;
     bool isOnScreen;
+    bool _farAway;
+    bool farAway;
 
     private void FixedUpdate()
     {
@@ -62,20 +74,23 @@ public class ShipTag : MonoBehaviour
 
         point = Camera.main.WorldToViewportPoint(t_trans.position);
         isOnScreen = point.x > 0f && point.x < 1f && point.y > 0f && point.y < 1f;
+        farAway = cam.orthographicSize > 30;
 
-        if (isOnScreen != _onScreen)
+        if (isOnScreen != _onScreen || farAway != _farAway)
         {
             if (isOnScreen) { OnShipApearedOnScreen(); }
             else { OnShipDispearedFromScreen(); }
 
-            go_target.SetActive(!isOnScreen);
-            go_health.SetActive(isOnScreen);
-            go_shield.SetActive(isOnScreen && t_ship.maxShield > 0);
+            go_target.SetActive(!isOnScreen || farAway);
+            go_health.SetActive(isOnScreen && !farAway);
+            go_shield.SetActive(isOnScreen && !farAway && t_ship.maxShield > 0);
+            nameTag.gameObject.SetActive(isOnScreen && !farAway);
 
             _onScreen = isOnScreen;
+            _farAway = farAway;
         }
 
-        ui_Hunter.enabled = t_ship.isHunter;
+        //ui_Hunter.enabled = false;
 
         UpdatePosition();
     }
@@ -90,13 +105,14 @@ public class ShipTag : MonoBehaviour
             rt_tag.anchorMin = Vector2.zero;
             rt_tag.anchorMax = Vector2.zero;
 
-            pos.x = 720 * point.x * PlayerShipUI.ScrRatio;
+            pos.x = 720 * point.x * PlayerUI.ScrRatio;
             pos.y = 720 * point.y;
             rt_tag.anchoredPosition = pos;
         }
         else
         {
-            Vector2 dir = (t_trans.position - Ship.PLAYER.transform.position).normalized;
+            //Vector2 dir = (t_trans.position - Ship.PLAYER.transform.position).normalized;
+            Vector2 dir = (point - Vector2.one * 0.5f).normalized;
 
             rt_tag.anchorMin = Vector2.one * 0.5f;
             rt_tag.anchorMax = Vector2.one * 0.5f;

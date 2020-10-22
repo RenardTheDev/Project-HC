@@ -16,7 +16,6 @@ public class ShipAI : MonoBehaviour
 
     Vector3 destination;
     public bool isAvoiding;
-    public bool isAttacker;
 
     float avoidTime = 0;
 
@@ -38,20 +37,26 @@ public class ShipAI : MonoBehaviour
 
     private void OnShipKilled(Damage dmg)
     {
-        //GMSurvival.current.currAttackingEnemies--;
+        currEnemy = null;
+        enemies.Clear();
+
+        state = AIState.idle;
     }
 
     float lastEnemySwitch;
     float enemySwitchTime = 5f;
     private void OnShipGetHit(Damage dmg)
     {
-        if (dmg.attacker.team != ship.team)
+        if (dmg.attacker == null) return;
+
+        if (dmg.attacker.teamID != ship.teamID)
         {
             if(dmg.attacker.health > 0)
             {
                 if(Time.time > lastEnemySwitch + enemySwitchTime)
                 {
                     currEnemy = dmg.attacker;
+                    lastEnemySwitch = Time.time;
                 }
             }
         }
@@ -113,17 +118,10 @@ public class ShipAI : MonoBehaviour
                                 destination = currEnemy.transform.position - GetEnemyDirection() * 15 + rnd;
                             }
 
-                            if (isAttacker)
+                            avoidTime += Time.deltaTime;
+                            if (GetDistanceToEnemy() > 10 || avoidTime > 5)
                             {
-                                avoidTime += Time.deltaTime;
-                                if (GetDistanceToEnemy() > 20 || avoidTime > 5)
-                                {
-                                    isAvoiding = false;
-                                    avoidTime = 0;
-                                }
-                            }
-                            else
-                            {
+                                isAvoiding = false;
                                 avoidTime = 0;
                             }
                         }
@@ -137,7 +135,7 @@ public class ShipAI : MonoBehaviour
                             }
                             else
                             {
-                                if (Random.value > (0.99f - Mathf.Clamp(GameData.wave * 0.005f, 0.01f, 0.5f)))
+                                if (Random.value > 0.975f)
                                 {
                                     weap.trigger = true;
                                 }
@@ -195,10 +193,7 @@ public class ShipAI : MonoBehaviour
             case AIState.roam:
                 break;
             case AIState.attack:
-                {
-                    isAvoiding = !isAttacker;
-                    break;
-                }
+                break;
             case AIState.stayAround:
                 break;
         }
@@ -220,12 +215,13 @@ public class ShipAI : MonoBehaviour
 
     void CheckForEnemies()
     {
+        currEnemy = null;
         enemies.Clear();
 
         for (int i = 0; i < ShipPool.current.activeList.Count; i++)
         {
             var sh = ShipPool.current.activeList[i].ship;
-            if (sh.team != ship.team && sh.isAlive)
+            if (sh.teamID != ship.teamID && sh.isAlive)
             { enemies.Add(sh); }
         }
 
@@ -259,8 +255,6 @@ public class ShipAI : MonoBehaviour
     Vector3 GetDestDirection()
     {
         Vector3 dir = destination - transform.position;
-        //Debug.DrawRay(transform.position, dir, Color.green);
-
         return (dir.normalized + avoidVector).normalized;
     }
 
@@ -269,7 +263,6 @@ public class ShipAI : MonoBehaviour
         if (currEnemy != null && currEnemy.health > 0)
         {
             Vector3 dir = currEnemy.transform.position - transform.position;
-            //Debug.DrawRay(transform.position, dir, Color.red);
             return (dir.normalized + avoidVector).normalized;
         }
         else

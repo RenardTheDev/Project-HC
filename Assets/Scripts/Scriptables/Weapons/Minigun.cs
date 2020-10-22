@@ -24,7 +24,6 @@ public class Minigun : Weapon
     //public AnimationCurve overheatFirerateDrop;
 
     float lastShot;
-    int gunID = 0;
     bool playSFX;
 
     public override void OnAssigned(Ship ship)
@@ -74,13 +73,9 @@ public class Minigun : Weapon
 
         if (shooting)
         {
-            if (owner.isAlive && Time.time > lastShot + ((60f / lvld_fireRate) * fireRateOverHeat.Evaluate(heat)) / owner.shipUpgrades[(int)UpgradeType.guns] && !overHeated)
+            if (owner.isAlive && Time.time > lastShot + ((60f / lvld_fireRate) * fireRateOverHeat.Evaluate(heat)) && !overHeated)
             {
-                for (int g = 0; g < owner.shipUpgrades[(int)UpgradeType.guns]; g++)
-                {
-                    _makeShot();
-                }
-
+                _makeShot();
                 shooting = false;
             }
         }
@@ -92,20 +87,13 @@ public class Minigun : Weapon
 
         Vector3 origin = trans.position;
 
-        if (owner.shipUpgrades[(int)UpgradeType.guns] > 1 && gunID < 2)
-        {
-            origin = trans.TransformPoint((gunID % 2 == 0 ? Vector3.right : Vector3.left) * 0.5f);
-        }
-
         ProjectileSystem.current.SpawnProjectile(origin, trans.eulerAngles.z + shotDeviation, owner, this);
         playSFX = true;
 
         lastShot = Time.time;
 
-        gunID = gunID >= owner.shipUpgrades[(int)UpgradeType.guns]  - 1 ? 0 : gunID + 1;
-
         //--- heat ---
-        heat += hIncrement / owner.shipUpgrades[(int)UpgradeType.guns];
+        heat += hIncrement;
         if (heat >= 1f)
         {
             overHeated = true;

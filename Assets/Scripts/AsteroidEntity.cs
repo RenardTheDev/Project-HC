@@ -21,7 +21,7 @@ public class AsteroidEntity : MonoBehaviour
         sprRend = GetComponent<SpriteRenderer>();
     }
 
-    public void ApplyDamage(float dmg, Ship attacker)
+    public void ApplyDamage(Ship attacker, float dmg)
     {
         if (attacker != null)
         {
@@ -47,6 +47,39 @@ public class AsteroidEntity : MonoBehaviour
                     AsteroidSystem.current.SpawnAsteroid(transform.position + rnd, onDeathSpawnSize, false);
                 }
             }
+        }
+    }
+
+    private void FixedUpdate()
+    {
+        myVelocity = rig.velocity;
+    }
+
+    public Vector2 myVelocity;
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        // collision damage //
+
+        Vector2 hit = collision.relativeVelocity;
+        float dot = Mathf.Pow(Vector2.Dot(hit.normalized, collision.contacts[0].normal), 2f);
+        hit = hit * dot;
+        float hitPower = Mathf.Clamp(Mathf.Abs(collision.rigidbody.mass / rig.mass), 1f, float.MaxValue) * hit.magnitude * Time.fixedDeltaTime;
+
+        if (collision.collider.TryGetComponent(out Ship ship))
+        {
+            if (hitPower > 2.5f)
+            {
+                ApplyDamage(ship, hitPower);
+            }
+        }
+
+        if (collision.collider.TryGetComponent(out AsteroidEntity aster))
+        {
+            if (hitPower > 2.5f)
+            {
+                ApplyDamage(null, hitPower);
+            }
+            GlobalEvents.CollisionEntered(this, aster, hitPower, collision.contacts[0].point);
         }
     }
 }

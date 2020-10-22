@@ -62,22 +62,22 @@ public class GlobalEvents : MonoBehaviour
         onPlayerChangedSkill?.Invoke(skill);
     }
 
-    public static event Action<WaveType> OnRoundStarted;
-    public static void RoundStarted(WaveType waveType)
-    {
-        OnRoundStarted?.Invoke(waveType);
-    }
-
-    public static event Action OnRoundEnded;
-    public static void RoundEnded()
-    {
-        OnRoundEnded?.Invoke();
-    }
-
     public static event Action OnGameOver;
     public static void GameOver()
     {
         OnGameOver?.Invoke();
+    }
+
+    public static event Action<GameState> OnGameStateChanged;
+    public static void GameStateChanged(GameState newstate)
+    {
+        OnGameStateChanged?.Invoke(newstate);
+    }
+
+    public static event Action<object, object, float, Vector3> OnCollisionEntered;
+    public static void CollisionEntered(object objA, object objB, float hitPower, Vector3 point)
+    {
+        OnCollisionEntered?.Invoke(objA, objB, hitPower, point);
     }
 
     //---settings---

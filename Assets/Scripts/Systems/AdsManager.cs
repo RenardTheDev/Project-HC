@@ -34,6 +34,7 @@ public class AdsManager : MonoBehaviour, IUnityAdsListener
         {
             Debug.Log("ShowAds()");
             Advertisement.Show(justAdID);
+            lastTimeShowed = Time.time;
         }
     }
 
@@ -83,7 +84,7 @@ public class AdsManager : MonoBehaviour, IUnityAdsListener
                     //--- reward ---
                     if (placementId == respawnRewardID)
                     {
-                        GameManager.current.RespawnRewardApply();
+
                     }
                     break;
                 }

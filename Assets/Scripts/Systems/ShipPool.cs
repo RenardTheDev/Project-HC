@@ -10,9 +10,6 @@ public class ShipPool : MonoBehaviour
     public List<ShipPoolEntry> activeList;
     public List<ShipPoolEntry> inactiveList;
 
-    public Sprite[] smallShipSprite_player;
-    public Sprite[] smallShipSprite_enemy;
-
     private void Awake()
     {
         current = this;
@@ -44,7 +41,63 @@ public class ShipPool : MonoBehaviour
         }
     }
 
-    public Ship SpawnShip(Vector2 pos, float rotation, bool isPlayer, string name = "Random pilot", int team = 0)
+    public Ship SpawnPlayeShip(Vector2 pos, float rotation)
+    {
+        Ship s = SpawnShip(pos, rotation);
+
+        s.MarkAsPlayer(true);
+        s.Name = "Player";
+        s.ChangeSkin(GameManager.current.team[0].GetRandomSkin(), false);
+
+        GlobalEvents.ShipSpawned(s);
+
+        CameraController.current.AssignTarget(s.transform);
+        PlayerUI.current.AssignTarget(s);
+        return s;
+    }
+
+    public Ship SpawnEnemyShip(Vector2 pos, float rotation)
+    {
+        Ship s = SpawnShip(pos, rotation);
+
+        s.MarkAsPlayer(false);
+        s.Name = $"Pilot#{Random.value * 1000:0000}";
+        s.ChangeSkin(GameManager.current.team[1].GetRandomSkin(), false);
+
+        GlobalEvents.ShipSpawned(s);
+        return s;
+    }
+
+    public Ship SpawnTeamShip(Vector2 pos, float rotation, int team)
+    {
+        Ship s = SpawnShip(pos, rotation);
+
+        s.MarkAsPlayer(false);
+        s.teamID = team;
+        s.Name = $"{NameGenerator.Generate()} {NameGenerator.Generate()}";
+        s.ChangeSkin(GameManager.current.team[team].GetRandomSkin(), false);
+
+        GlobalEvents.ShipSpawned(s);
+        return s;
+    }
+
+    public void HideShips()
+    {
+        foreach (var item in activeList)
+        {
+            if (item.ship.isAlive) item.ship.Hide();
+        }
+    }
+
+    public void ObliterateShips()
+    {
+        foreach (var item in activeList)
+        {
+            if (item.ship.isAlive) item.ship.Obliterate();
+        }
+    }
+
+    Ship SpawnShip(Vector2 pos, float rotation)
     {
         ShipPoolEntry s = GetShip();
         if (s == null)
@@ -57,15 +110,7 @@ public class ShipPool : MonoBehaviour
             activeList.Add(s);
         }
 
-        s.Spawn(pos, rotation, isPlayer, name, team);
-
-        s.spr.sprite = isPlayer ?
-            smallShipSprite_player[Random.Range(0, smallShipSprite_player.Length)] :
-            smallShipSprite_enemy[Random.Range(0, smallShipSprite_enemy.Length)];
-
-        s.spr.flipY = !isPlayer;
-
-        GlobalEvents.ShipSpawned(s.ship);
+        s.Spawn(pos, rotation);
 
         return s.ship;
     }
@@ -118,30 +163,25 @@ public class ShipPool : MonoBehaviour
     }
 }
 
+[System.Serializable]
 public class ShipPoolEntry
 {
     public GameObject go;
     public Ship ship;
-    public SpriteRenderer spr;
     public float deadTimer;
 
     public ShipPoolEntry(GameObject gameObject)
     {
         go = gameObject;
         ship = go.GetComponent<Ship>();
-        spr = go.GetComponent<SpriteRenderer>();
     }
 
-    public void Spawn(Vector2 pos, float rotation, bool isPlayer, string name, int team)
+    public void Spawn(Vector2 pos, float rotation)
     {
         go.transform.position = pos;
         go.transform.rotation = Quaternion.Euler(0, 0, rotation);
 
         ship.health = ship.maxHealth;
-        ship.team = team;
-        ship.Name = name;
-
-        ship.MarkAsPlayer(isPlayer);
 
         go.SetActive(true);
     }
@@ -149,6 +189,7 @@ public class ShipPoolEntry
     public void Despawn()
     {
         go.SetActive(false);
+        ship.health = 0;
         deadTimer = 0;
     }
 }

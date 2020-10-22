@@ -20,7 +20,7 @@ public class Preloader : MonoBehaviour
 
     private void Update()
     {
-        ring.rectTransform.Rotate(Vector3.forward, 360 * Time.deltaTime);
+        ring.rectTransform.Rotate(Vector3.back, 360 * Time.deltaTime);
         if (loading != null) loading_fill.fillAmount = Mathf.Clamp01(loading.progress / 0.9f);
     }
 

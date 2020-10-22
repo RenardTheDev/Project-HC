@@ -22,6 +22,7 @@ public class ShipTagManager : MonoBehaviour
         GlobalEvents.onShipKilled += OnShipKilled;
     }
 
+
     private void OnShipSpawned(Ship ship)
     {
         if (ship.isPlayer) return;

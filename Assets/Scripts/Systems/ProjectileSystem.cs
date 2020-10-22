@@ -59,7 +59,7 @@ public class ProjectileSystem : MonoBehaviour
             Ship ship = hit.collider.GetComponentInParent<Ship>();
             if (ship != null)
             {
-                if (ship != p.owner && ship.team != p.owner.team || GameManager.current.friendlyFire)
+                if (ship != p.owner && ship.teamID != p.owner.teamID)
                 {
                     ship.ApplyDamage(p.owner, p.damage);
 
@@ -72,7 +72,7 @@ public class ProjectileSystem : MonoBehaviour
             {
                 if (hit.collider.TryGetComponent(out AsteroidEntity aster))
                 {
-                    aster.ApplyDamage(p.damage, p.owner);
+                    aster.ApplyDamage(p.owner, p.damage);
                 }
                 stopped = true;
                 finalHit = hit;

@@ -35,7 +35,7 @@ public class Skill_CarpetBombing : SkillBase
         {
             var sh = ShipPool.current.activeList[i].ship;
             var dist = (sh.transform.position - owner.transform.position).magnitude;
-            if (sh != owner && sh.team != owner.team && sh.isAlive && dist < lockOnRadius)
+            if (sh != owner && sh.teamID != owner.teamID && sh.isAlive && dist < lockOnRadius)
             {
                 enemies.Add(sh);
             }

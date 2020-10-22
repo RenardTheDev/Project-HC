@@ -14,9 +14,39 @@ public class SFXShotSystem : MonoBehaviour
     public AudioClip explosionClip;
     public AudioClip explosiveProjClip;
 
+    public AudioClip collision_ship2aster;
+    public AudioClip collision_ship2ship;
+    public AudioClip collision_aster2aster;
+
     private void Awake()
     {
         current = this;
+        GlobalEvents.OnCollisionEntered += OnCollisionEntered;
+    }
+
+    private void OnCollisionEntered(object obj1, object obj2, float hitPower, Vector3 point)
+    {
+        float volume = Mathf.Lerp(0f, 0.2f, hitPower / 5f);
+        if (volume <= 0.05f) return;
+
+        if (obj1 is Ship)
+        {
+            if (obj2 is Ship)
+            {
+                SpawnSFX(point, volume, collision_ship2ship, null, 0.9f, 0, 10, 25);
+            }
+            if (obj2 is AsteroidEntity)
+            {
+                SpawnSFX(point, volume, collision_ship2aster, null, 0.9f, 0, 10, 25);
+            }
+        }
+        if (obj1 is AsteroidEntity)
+        {
+            if (obj2 is AsteroidEntity)
+            {
+                SpawnSFX(point, volume, collision_aster2aster, null, 0.9f, 0, 10, 25);
+            }
+        }
     }
 
     private void Update()

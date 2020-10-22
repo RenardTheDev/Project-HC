@@ -49,7 +49,7 @@ public class Skill_Tesla : SkillBase
         {
             sh = ShipPool.current.activeList[i].ship;
             var dist = (sh.transform.position - pivot).magnitude;
-            if (sh != owner && sh.team != owner.team && sh.isAlive && !hitList.Contains(sh) && dist < activeRadius)
+            if (sh != owner && sh.teamID != owner.teamID && sh.isAlive && !hitList.Contains(sh) && dist < activeRadius)
             {
                 enemies.Add(sh);
             }

@@ -16,11 +16,13 @@ public class CameraController : MonoBehaviour
     public float aheadDump = 0.1f;
 
     public CinemachineImpulseSource explosionImpulse;
+    public CinemachineImpulseSource collisionImpulse;
 
     private void Awake()
     {
         current = this;
-        if (target) cm_cam.m_Follow = target;
+        cm_cam = GetComponent<CinemachineVirtualCamera>();
+        //if (target) cm_cam.m_Follow = target;
     }
 
     private void Start()
@@ -50,17 +52,28 @@ public class CameraController : MonoBehaviour
         target_rb = target.GetComponent<Rigidbody2D>();
     }
 
+    public void SetOrthoSize(int size)
+    {
+        cm_cam.m_Lens.OrthographicSize = size;
+    }
+
     public void ClearTarget()
     {
         target = null;
         target_rb = null;
     }
 
-    public void ExplosionImpulse(Vector3 pos, float mult = 1f)
+    public void ExplosionImpulse(Vector3 point, float mult = 1f)
     {
-        explosionImpulse.transform.position = pos;
-        Vector3 veclocity = pos - transform.position;
+        explosionImpulse.transform.position = point;
+        Vector3 veclocity = point - transform.position;
 
-        explosionImpulse.GenerateImpulseAt(pos, veclocity.normalized * mult);
+        explosionImpulse.GenerateImpulseAt(point, veclocity.normalized * mult);
+    }
+
+    public void CollisionImpulse(Vector3 point, Vector3 force)
+    {
+        collisionImpulse.transform.position = point;
+        collisionImpulse.GenerateImpulseAt(point, force);
     }
 }

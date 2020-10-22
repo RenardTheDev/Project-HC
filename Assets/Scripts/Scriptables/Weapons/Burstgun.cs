@@ -7,7 +7,6 @@ using UnityEngine;
 public class Burstgun : Weapon
 {
     float lastShot;
-    int gunID = 0;
     bool playSFX;
 
     bool reloading;
@@ -52,10 +51,7 @@ public class Burstgun : Weapon
         {
             if (owner.isAlive && Time.time > lastShot + (60f / lvld_fireRate))
             {
-                for (int g = 0; g < owner.shipUpgrades[(int)UpgradeType.guns]; g++)
-                {
-                    _makeShot();
-                }
+                _makeShot();
 
                 clip--;
                 if (clip <= 0)
@@ -87,17 +83,8 @@ public class Burstgun : Weapon
 
         Vector3 origin = trans.position;
 
-        if (owner.shipUpgrades[(int)UpgradeType.guns] > 1 && gunID < 2)
-        {
-            origin = trans.TransformPoint((gunID % 2 == 0 ? Vector3.right : Vector3.left) * 0.5f);
-        }
-
         ProjectileSystem.current.SpawnProjectile(origin, trans.eulerAngles.z + shotDeviation, owner, this);
         playSFX = true;
-
-        lastShot = Time.time;
-
-        gunID = gunID >= owner.shipUpgrades[(int)UpgradeType.guns] - 1 ? 0 : gunID + 1;
 
         lastShot = Time.time;
     }

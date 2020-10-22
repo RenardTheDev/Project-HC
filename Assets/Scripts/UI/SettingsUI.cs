@@ -100,16 +100,6 @@ public class SettingsUI : MonoBehaviour
     float progress;
     IEnumerator ShowWindow()
     {
-        switch (GameManager.current.gameState)
-        {
-            case GameState.start:
-                PlayerShipUI.current.ui_startScreen.enabled = false;
-                break;
-            case GameState.pause:
-                PlayerShipUI.current.ui_pauseScreen.enabled = false;
-                break;
-        }
-
         progress = 0;
         canvas.enabled = true;
 
@@ -140,16 +130,6 @@ public class SettingsUI : MonoBehaviour
         }
 
         canvas.enabled = false;
-
-        switch (GameManager.current.gameState)
-        {
-            case GameState.start:
-                PlayerShipUI.current.ui_startScreen.enabled = true;
-                break;
-            case GameState.pause:
-                PlayerShipUI.current.ui_pauseScreen.enabled = true;
-                break;
-        }
     }
 
     void LoadSettings()
@@ -169,7 +149,6 @@ public class SettingsUI : MonoBehaviour
 
     void SaveSettings()
     {
-        //--- records ---
         BinaryFormatter bf = new BinaryFormatter();
         FileStream file = File.Create(Application.persistentDataPath + "/settings.dat");
 

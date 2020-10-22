@@ -2,22 +2,24 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;
+using System.Runtime.CompilerServices;
+using UnityEditor;
 using UnityEngine;
 
 public class Ship : MonoBehaviour
 {
     public static Ship PLAYER;
 
+    SpriteRenderer spr;
+
     public ShipWeapon weap;
     public ShipMotor motor;
-
-    public Dictionary<int, int> shipUpgrades = new Dictionary<int, int>();
-    public Dictionary<int, int> weapUpgrades = new Dictionary<int, int>();
+    public ShipAI ai;
 
     public int equippedWeapID = 0;
 
     public bool isPlayer;
-    public bool isHunter;
+    public bool isInvulnerable;
 
     public float health = 16;
     public float maxHealth = 16;
@@ -33,7 +35,7 @@ public class Ship : MonoBehaviour
 
     public string Name = "Pilot#0000";
 
-    public int team = -1;
+    public int teamID = -1;
 
     public CircleCollider2D coll;
     public CircleCollider2D hitbox;
@@ -45,9 +47,12 @@ public class Ship : MonoBehaviour
 
     private void Awake()
     {
+        spr = GetComponent<SpriteRenderer>();
         rig = GetComponent<Rigidbody2D>();
         motor = GetComponent<ShipMotor>();
         weap = GetComponent<ShipWeapon>();
+        ai = GetComponent<ShipAI>();
+
         sfx_source = GetComponentInChildren<AudioSource>();
 
         if (CompareTag("Player"))
@@ -61,6 +66,10 @@ public class Ship : MonoBehaviour
         tag = mark ? "Player" : "Untagged";
         isPlayer = mark;
 
+        teamID = 0;
+
+        ai.enabled = !mark;
+
         if (mark)
         {
             PLAYER = this;
@@ -68,9 +77,9 @@ public class Ship : MonoBehaviour
         }
         else
         {
-            if(team != PLAYER.team)
+            if (teamID != PLAYER.teamID)
             {
-                hitbox.radius = coll.radius * GameManager._enemyHitboxScale;
+                hitbox.radius = coll.radius;
             }
             else
             {
@@ -79,89 +88,58 @@ public class Ship : MonoBehaviour
         }
     }
 
-    public void ApplyUpgrades()
+    public void ChangeSkin(Sprite newSkin, bool flipY)
     {
-        foreach (var item in shipUpgrades)
-        {
-            UpdateUpgrade((UpgradeType)item.Key);
-        }
-    }
-
-    public void UpdateUpgrade(UpgradeType type)
-    {
-        ShipUpgrade upg = ShipUpgrade.dict[type];
-        int currentLevel = shipUpgrades[(int)type];
-
-        switch (type)
-        {
-            case UpgradeType.health:
-                var lastMaxHP = maxHealth;
-                maxHealth = 100 + ShipUpgrade.dict[type].increment * (currentLevel - 1);
-                var ratio = health / lastMaxHP;
-                health = maxHealth * ratio;
-                break;
-            case UpgradeType.hp_pickup:
-                //--- no pickups for now ---
-                break;
-            case UpgradeType.shield:
-                maxShield = upg.increment * (currentLevel - 1);
-                break;
-            case UpgradeType.sh_regen:
-                shieldRegen = upg.increment * (currentLevel - 1);
-                break;
-            case UpgradeType.speed:
-                motor.maxSpeed = 50 + 50 * upg.increment * 0.01f * (currentLevel - 1);
-                motor.accel = 20 + 20 * upg.increment * 0.01f * (currentLevel - 1);
-                break;
-            case UpgradeType.resist:
-                damageResist = upg.increment * 0.01f * (currentLevel - 1);
-                break;
-            case UpgradeType.damage:
-                damageMult = 1f + upg.increment * 0.01f * (currentLevel - 1);
-                break;
-            case UpgradeType.skill_cd:
-                weap.skill_cd_mult = 1f - upg.increment * 0.01f * (currentLevel - 1);
-                break;
-        }
+        spr.sprite = newSkin;
+        spr.flipY = flipY;
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        Debug.DrawRay(transform.position, collision.relativeVelocity, Color.magenta, 5f);
 
-        /*float damage = collision.relativeVelocity.magnitude * collision.rigidbody.mass * 0.02f;
-        if (collision.relativeVelocity.magnitude > 5f)
+        // collision shake effect //
+
+        if (isPlayer)
         {
-            if (collision.collider.TryGetComponent(out Ship ship))
+            for (int i = 0; i < collision.contactCount; i++)
             {
-                Rigidbody2D enemyRig = ship.GetComponent<Rigidbody2D>();
-                if (rig.velocity.sqrMagnitude >= enemyRig.velocity.sqrMagnitude)
-                {
-                    ship.ApplyDamage(this, damage);
-                }
-                else
-                {
-                    ApplyDamage(ship, damage);
-                }
+                var c = collision.contacts[i];
+                CameraController.current.CollisionImpulse(c.point, c.normal * c.normalImpulse * 0.02f);
             }
+        }
 
-            if (collision.collider.TryGetComponent(out AsteroidEntity aster))
+        // collision damage //
+
+        Vector2 hit = collision.relativeVelocity;
+        float dot = Mathf.Pow(Vector2.Dot(hit.normalized, collision.contacts[0].normal), 2f);
+        hit = hit * dot;
+        float hitPower = Mathf.Clamp(collision.rigidbody.mass / rig.mass, 1f, float.MaxValue) * hit.magnitude * Time.fixedDeltaTime;
+
+        if (collision.collider.TryGetComponent(out Ship ship))
+        {
+            if (hitPower > 5f)
             {
-                Rigidbody2D enemyRig = aster.rig;
-                if (rig.velocity.sqrMagnitude >= enemyRig.velocity.sqrMagnitude)
-                {
-                    aster.ApplyDamage(damage);
-                }
-                else
-                {
-                    ApplyDamage(null, damage);
-                }
+                ApplyDamage(ship, hitPower);
             }
-        }*/
+            GlobalEvents.CollisionEntered(this, ship, hitPower, collision.contacts[0].point);
+        }
+
+        if (collision.collider.TryGetComponent(out AsteroidEntity aster))
+        {
+            if (hitPower > 5f)
+            {
+                ApplyDamage(this, hitPower);
+            }
+            GlobalEvents.CollisionEntered(this, aster, hitPower, collision.contacts[0].point);
+        }
     }
+
+    public Vector2 myVelocity;
 
     private void FixedUpdate()
     {
+        myVelocity = rig.velocity;
+
         if (health <= 0 || health > 20f) return;
 
         if (health <= 20f)
@@ -172,6 +150,10 @@ public class Ship : MonoBehaviour
 
     private void Update()
     {
+        if (isPlayer && Time.time > lastDamageTaken + 2f)
+        {
+            health = Mathf.MoveTowards(health, maxHealth, Time.deltaTime * 5);
+        }
         if (maxShield > 0 && Time.time > lastDamageTaken + 2f)
         {
             shield = Mathf.MoveTowards(shield, maxShield, Time.deltaTime * (1 + shieldRegen));
@@ -186,34 +168,12 @@ public class Ship : MonoBehaviour
 
         Damage dmg = new Damage() { attacker = attacker, victim = this, hp = amount };
 
-        if (attacker.isPlayer && !isPlayer)
-        {
-            if (isHunter)
-            {
-                dmg.hp = dmg.hp * GameManager._enemyDamageMult;
-            }
-            else
-            {
-                dmg.hp = dmg.hp * GameManager._playerDamageMult;
-            }
-        }
-        else if (!attacker.isPlayer && isPlayer)
-        {
-            dmg.hp = dmg.hp * GameManager._enemyDamageMult;
-        }
-
         dmg.hp = dmg.hp - dmg.hp * damageResist;
-
-        int enemyGuns = dmg.attacker.shipUpgrades[(int)UpgradeType.guns];
-        if (enemyGuns > 1)
-        {
-            dmg.hp = dmg.hp - dmg.hp * 0.25f * (enemyGuns - 1);
-        }
 
         if (shield > dmg.hp)
         {
             dmg.reaction = DamageReactionType.shield;
-            shield -= dmg.hp;
+            if(!isInvulnerable) shield -= dmg.hp;
             ShipGetHit(dmg);
         }
         else
@@ -221,11 +181,11 @@ public class Ship : MonoBehaviour
             dmg.reaction = shield > 0 ? DamageReactionType.both : DamageReactionType.health;
 
             float diffDMG = dmg.hp - shield;
-            shield = 0;
+            if (!isInvulnerable) shield = 0;
 
             if (health > diffDMG)
             {
-                health -= diffDMG;
+                if (!isInvulnerable) health -= diffDMG;
                 ShipGetHit(dmg);
             }
             else
@@ -263,7 +223,21 @@ public class Ship : MonoBehaviour
         {
             victim = this,
             hp = health,
-            isObliteration = true
+            deathReason = DeathReason.obliterated
+        };
+        GlobalEvents.ShipKilled(dmg);
+    }
+
+    public void Hide()
+    {
+        health = 0;
+        gameObject.SetActive(false);
+
+        var dmg = new Damage()
+        {
+            victim = this,
+            hp = health,
+            deathReason = DeathReason.hidden
         };
         GlobalEvents.ShipKilled(dmg);
     }
@@ -292,7 +266,7 @@ public struct Damage
 
     public DamageReactionType reaction;
 
-    public bool isObliteration;
+    public DeathReason deathReason;
 }
 
 public enum DamageReactionType
@@ -301,4 +275,11 @@ public enum DamageReactionType
     health,
     shield,
     both
+}
+
+public enum DeathReason
+{
+    killed,
+    obliterated,
+    hidden
 }

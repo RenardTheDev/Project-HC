@@ -7,7 +7,6 @@ using UnityEngine;
 public class Machinegun : Weapon
 {
     float lastShot;
-    int gunID = 0;
     bool playSFX;
 
     bool reloading;
@@ -52,10 +51,7 @@ public class Machinegun : Weapon
         {
             if (owner.isAlive && Time.time > lastShot + (60f / lvld_fireRate))
             {
-                for (int g = 0; g < owner.shipUpgrades[(int)UpgradeType.guns]; g++)
-                {
-                    _makeShot();
-                }
+                _makeShot();
 
                 clip--;
                 shooting = false;
@@ -75,39 +71,11 @@ public class Machinegun : Weapon
 
     public override void Trigger()
     {
-        /*if (!reloading)
-        {
-            if (Time.time - lastShot > (60f / lvld_fireRate) / (owner.shipUpgrades[(int)UpgradeType.guns]))
-            {
-                MakeShot();
-            }
-        }*/
         if (!reloading && !shooting)
         {
             shooting = true;
         }
     }
-
-    /*public void MakeShot()
-    {
-        float shotDeviation = Random.Range(-1.0f, 1.0f) * lvld_spread;
-
-        Vector3 origin = trans.position;
-
-        if (owner.shipUpgrades[(int)UpgradeType.guns] > 1 && gunID < 2)
-        {
-            origin = trans.TransformPoint((gunID % 2 == 0 ? Vector3.right : Vector3.left) * 0.5f);
-        }
-
-        ProjectileSystem.current.SpawnProjectile(origin, trans.eulerAngles.z + shotDeviation, owner, this);
-        playSFX = true;
-
-        lastShot = Time.time;
-
-        gunID = gunID >= owner.shipUpgrades[(int)UpgradeType.guns] - 1 ? 0 : gunID + 1;
-        clip--;
-        if (clip == 0) { reloading = true; lastReload = Time.time; }
-    }*/
 
     public void _makeShot()
     {
@@ -115,17 +83,8 @@ public class Machinegun : Weapon
 
         Vector3 origin = trans.position;
 
-        if (owner.shipUpgrades[(int)UpgradeType.guns] > 1 && gunID < 2)
-        {
-            origin = trans.TransformPoint((gunID % 2 == 0 ? Vector3.right : Vector3.left) * 0.5f);
-        }
-
         ProjectileSystem.current.SpawnProjectile(origin, trans.eulerAngles.z + shotDeviation, owner, this);
         playSFX = true;
-
-        lastShot = Time.time;
-
-        gunID = gunID >= owner.shipUpgrades[(int)UpgradeType.guns] - 1 ? 0 : gunID + 1;
 
         lastShot = Time.time;
     }
