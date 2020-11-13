@@ -28,7 +28,7 @@ public class AsteroidSystem : MonoBehaviour
 
     private void Start()
     {
-        GlobalEvents.onAsteroidDestroyed += OnAsteroidDestroyed;
+        GlobalEvents.OnAsteroidDestroyed += OnAsteroidDestroyed;
     }
 
     private void OnAsteroidDestroyed(AsteroidEntity aster)

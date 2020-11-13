@@ -67,7 +67,7 @@ public class AsteroidEntity : MonoBehaviour
 
         if (collision.collider.TryGetComponent(out Ship ship))
         {
-            if (hitPower > 2.5f)
+            if (hitPower > 1f)
             {
                 ApplyDamage(ship, hitPower);
             }
@@ -75,7 +75,7 @@ public class AsteroidEntity : MonoBehaviour
 
         if (collision.collider.TryGetComponent(out AsteroidEntity aster))
         {
-            if (hitPower > 2.5f)
+            if (hitPower > 1f)
             {
                 ApplyDamage(null, hitPower);
             }

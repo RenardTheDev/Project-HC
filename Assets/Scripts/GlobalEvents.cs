@@ -20,70 +20,51 @@ public class GlobalEvents : MonoBehaviour
         }
     }
 
-    public static event Action<Damage> onShipGetHit;
-    public static void ShipGetHit(Damage dmg)
-    {
-        onShipGetHit?.Invoke(dmg);
-    }
+    public static event Action<Damage> OnShipGetHit;
+    public static void ShipGetHit(Damage dmg) => OnShipGetHit?.Invoke(dmg);
 
-    public static event Action<Damage> onShipKilled;
-    public static void ShipKilled(Damage dmg)
-    {
-        onShipKilled?.Invoke(dmg);
-    }
 
-    public static event Action<Ship> onShipSpawned;
-    public static void ShipSpawned(Ship ship)
-    {
-        onShipSpawned?.Invoke(ship);
-    }
+    public static event Action<Damage> OnShipKilled;
+    public static void ShipKilled(Damage dmg) => OnShipKilled?.Invoke(dmg);
 
-    public static event Action<Ship> onShipPoolCreatedNewInstance;
-    public static void ShipPoolCreatedNewInstance(Ship ship)
-    {
-        onShipPoolCreatedNewInstance?.Invoke(ship);
-    }
 
-    public static event Action<AsteroidEntity> onAsteroidDestroyed;
-    public static void AsteroidDestroyed(AsteroidEntity aster)
-    {
-        onAsteroidDestroyed?.Invoke(aster);
-    }
+    public static event Action<Ship> OnShipSpawned;
+    public static void ShipSpawned(Ship ship) => OnShipSpawned?.Invoke(ship);
 
-    public static event Action<Weapon> onPlayerChangedWeapon;
-    public static void PlayerWeaponChanged(Weapon weap)
-    {
-        onPlayerChangedWeapon?.Invoke(weap);
-    }
 
-    public static event Action<SkillBase> onPlayerChangedSkill;
-    public static void PlayerSkillChanged(SkillBase skill)
-    {
-        onPlayerChangedSkill?.Invoke(skill);
-    }
+    public static event Action<Ship> OnShipPoolCreatedNewInstance;
+    public static void ShipPoolCreatedNewInstance(Ship ship) => OnShipPoolCreatedNewInstance?.Invoke(ship);
+
+
+    public static event Action<AsteroidEntity> OnAsteroidDestroyed;
+    public static void AsteroidDestroyed(AsteroidEntity aster) => OnAsteroidDestroyed?.Invoke(aster);
+
+
+    public static event Action<Weapon> OnPlayerChangedWeapon;
+    public static void PlayerWeaponChanged(Weapon weap) => OnPlayerChangedWeapon?.Invoke(weap);
+
+
+    public static event Action<SkillBase> OnPlayerChangedSkill;
+    public static void PlayerSkillChanged(SkillBase skill) => OnPlayerChangedSkill?.Invoke(skill);
+
 
     public static event Action OnGameOver;
-    public static void GameOver()
-    {
-        OnGameOver?.Invoke();
-    }
+    public static void GameOver() => OnGameOver?.Invoke();
 
-    public static event Action<GameState> OnGameStateChanged;
-    public static void GameStateChanged(GameState newstate)
-    {
-        OnGameStateChanged?.Invoke(newstate);
-    }
+
+    public static event Action<GameState, GameState> OnGameStateChanged;
+    public static void GameStateChanged(GameState oldstate, GameState newstate) => OnGameStateChanged?.Invoke(oldstate, newstate);
+
 
     public static event Action<object, object, float, Vector3> OnCollisionEntered;
-    public static void CollisionEntered(object objA, object objB, float hitPower, Vector3 point)
-    {
-        OnCollisionEntered?.Invoke(objA, objB, hitPower, point);
-    }
+    public static void CollisionEntered(object objA, object objB, float hitPower, Vector3 point) => OnCollisionEntered?.Invoke(objA, objB, hitPower, point);
+
+
+    // World Creation //
+    public static event Action<StationEntity> OnStationSpawned;
+    public static void StationSpawned(StationEntity station) => OnStationSpawned?.Invoke(station);
 
     //---settings---
     public static event Action<bool> OnControlsChanged;
-    public static void ControlsChanged(bool state)
-    {
-        OnControlsChanged?.Invoke(state);
-    }
+    public static void ControlsChanged(bool state) => OnControlsChanged?.Invoke(state);
 }

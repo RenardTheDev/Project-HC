@@ -34,8 +34,8 @@ public class MusicManager : MonoBehaviour
         current = this;
 
         GlobalEvents.OnGameOver += OnGameOver;
-        GlobalEvents.onShipGetHit += OnShipGetHit;
-        GlobalEvents.onShipKilled += OnShipKilled;
+        GlobalEvents.OnShipGetHit += OnShipGetHit;
+        GlobalEvents.OnShipKilled += OnShipKilled;
         GlobalEvents.OnGameStateChanged += OnGameStateChanged;
 
         currTheme = theme_normal[0];
@@ -45,16 +45,15 @@ public class MusicManager : MonoBehaviour
         StartCoroutine(ChangeTheme(false, theme_normal[Random.Range(0, theme_normal.Length)]));
     }
 
-    private void OnGameStateChanged(GameState state)
+    private void OnGameStateChanged(GameState oldstate, GameState newstate)
     {
-        switch (state)
+        switch (newstate)
         {
             case GameState.MainMenu:
                 StartCoroutine(StopAction(true, true));
                 break;
             case GameState.Game:
-                //StartCoroutine(StartAction(true));
-                StartCoroutine(ChangeTheme(true, theme_normal[Random.Range(0, theme_normal.Length)]));
+                if (oldstate == GameState.MainMenu) StartCoroutine(ChangeTheme(true, theme_normal[Random.Range(0, theme_normal.Length)]));
                 break;
             case GameState.Pause:
                 break;

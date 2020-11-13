@@ -18,8 +18,8 @@ public class ShipTagManager : MonoBehaviour
 
     private void Start()
     {
-        GlobalEvents.onShipSpawned += OnShipSpawned;
-        GlobalEvents.onShipKilled += OnShipKilled;
+        GlobalEvents.OnShipSpawned += OnShipSpawned;
+        GlobalEvents.OnShipKilled += OnShipKilled;
     }
 
 

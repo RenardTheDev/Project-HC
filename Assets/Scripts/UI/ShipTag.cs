@@ -23,10 +23,12 @@ public class ShipTag : MonoBehaviour
     public Text nameTag;
 
     Camera cam;
+    Transform camTrans;
 
     private void Awake()
     {
         cam = Camera.main;
+        camTrans = cam.transform;
         rt_tag = GetComponent<RectTransform>();
     }
 
@@ -35,7 +37,8 @@ public class ShipTag : MonoBehaviour
         t_ship = ship;
         t_trans = ship.transform;
 
-        point = Camera.main.WorldToViewportPoint(t_trans.position);
+        point = cam.WorldToViewportPoint(t_trans.position);
+
         isOnScreen = point.x > 0f && point.x < 1f && point.y > 0f && point.y < 1f;
         farAway = cam.orthographicSize > 30;
 
@@ -70,24 +73,42 @@ public class ShipTag : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (t_ship == null || Ship.PLAYER == null) return;
+        if (t_ship == null || Ship.PLAYER == null && GameManager.gameState != GameState.Game) return;
 
-        point = Camera.main.WorldToViewportPoint(t_trans.position);
-        isOnScreen = point.x > 0f && point.x < 1f && point.y > 0f && point.y < 1f;
-        farAway = cam.orthographicSize > 30;
+        float dist = (t_trans.position - camTrans.position).sqrMagnitude;
+        farAway = dist >= 1000000;
 
-        if (isOnScreen != _onScreen || farAway != _farAway)
+        if (dist < 1000000)
         {
-            if (isOnScreen) { OnShipApearedOnScreen(); }
-            else { OnShipDispearedFromScreen(); }
+            point = cam.WorldToViewportPoint(t_trans.position);
+            isOnScreen = point.x > 0f && point.x < 1f && point.y > 0f && point.y < 1f;
 
-            go_target.SetActive(!isOnScreen || farAway);
-            go_health.SetActive(isOnScreen && !farAway);
-            go_shield.SetActive(isOnScreen && !farAway && t_ship.maxShield > 0);
-            nameTag.gameObject.SetActive(isOnScreen && !farAway);
+            if (isOnScreen != _onScreen || farAway != _farAway)
+            {
+                if (isOnScreen) { OnShipApearedOnScreen(); }
+                else { OnShipDispearedFromScreen(); }
+
+                go_target.SetActive(!isOnScreen || farAway);
+                go_health.SetActive(isOnScreen && !farAway);
+                go_shield.SetActive(isOnScreen && !farAway && t_ship.maxShield > 0);
+                nameTag.gameObject.SetActive(isOnScreen && !farAway);
+
+                _onScreen = isOnScreen;
+                _farAway = farAway;
+            }
+        }
+        else
+        {
+            if (go_target.activeSelf) go_target.SetActive(false);
+            if (go_health.activeSelf) go_health.SetActive(false);
+            if (go_shield.activeSelf) go_shield.SetActive(false);
+
+            isOnScreen = false;
+            farAway = false;
 
             _onScreen = isOnScreen;
             _farAway = farAway;
+            return;
         }
 
         //ui_Hunter.enabled = false;

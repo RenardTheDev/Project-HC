@@ -14,6 +14,7 @@ public class DebugController : MonoBehaviour
     // game //
 
     public static DebugCommand KILL_ALL;
+    public static DebugCommand<float> TIME_SCALE;
     public static DebugCommand<int> SET_MAX_PLAYERS;
 
     // camera //
@@ -43,6 +44,10 @@ public class DebugController : MonoBehaviour
         {
             ShipPool.current.ObliterateShips();
         });
+        TIME_SCALE = new DebugCommand<float>("time_scale", "Sets Time.timeScale value.", "time_scale [float]", (x) =>
+        {
+            Time.timeScale = x;
+        }, 1f);
         SET_MAX_PLAYERS = new DebugCommand<int>("max_players", "Sets the maximum player setting.", "max_players [int]", (x) =>
         {
             GameManager.current.maxPlayers = x;
@@ -76,6 +81,7 @@ public class DebugController : MonoBehaviour
             HELP,
 
             KILL_ALL,
+            TIME_SCALE,
             SET_MAX_PLAYERS,
 
             SET_ORTHO_SIZE,

@@ -27,7 +27,7 @@ public class CameraController : MonoBehaviour
 
     private void Start()
     {
-        GlobalEvents.onShipKilled += OnShipKilled;
+        GlobalEvents.OnShipKilled += OnShipKilled;
     }
 
     private void OnShipKilled(Damage data)

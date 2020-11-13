@@ -29,7 +29,7 @@ public class ShipStatsUI : MonoBehaviour
 
     private void Start()
     {
-        GlobalEvents.onShipGetHit += OnShipGetHit;
+        GlobalEvents.OnShipGetHit += OnShipGetHit;
     }
 
     public void AssigneTarget(Ship ship)

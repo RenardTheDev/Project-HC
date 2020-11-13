@@ -12,13 +12,13 @@ public class ScreenFade : MonoBehaviour
 
     public Color fadeColor;
 
-    float fade = 1;
+    //float fade = 1;
 
     private void Awake()
     {
         curr = this;
-        fade = 1;
-        SetColor();
+        //fade = 1;
+        SetColor(1);
     }
 
     private void Start()
@@ -49,21 +49,20 @@ public class ScreenFade : MonoBehaviour
 
         if (time > 0)
         {
-            fade = 0;
-            SetColor();
+            float fade = 0;
+            SetColor(fade);
             while (fade < 1f)
             {
                 fade = Mathf.MoveTowards(fade, 1f, Time.deltaTime / time);
-                SetColor();
+                SetColor(fade);
                 yield return new WaitForEndOfFrame();
             }
             fade = 1;
-            SetColor();
+            SetColor(fade);
         }
         else
         {
-            fade = 1;
-            SetColor();
+            SetColor(1);
             yield return new WaitForEndOfFrame();
         }
     }
@@ -76,21 +75,20 @@ public class ScreenFade : MonoBehaviour
 
         if (time > 0)
         {
-            fade = 1;
-            SetColor();
+            float fade = 1;
+            SetColor(fade);
             while (fade > 0f)
             {
                 fade = Mathf.MoveTowards(fade, 0f, Time.deltaTime / time);
-                SetColor();
+                SetColor(fade);
                 yield return new WaitForEndOfFrame();
             }
             fade = 0;
-            SetColor();
+            SetColor(fade);
         }
         else
         {
-            fade = 0;
-            SetColor();
+            SetColor(0);
             yield return new WaitForEndOfFrame();
         }
     }
@@ -101,7 +99,7 @@ public class ScreenFade : MonoBehaviour
         yield return StartCoroutine(FadeOUTCor(delayOUT, timeOUT));
     }
 
-    void SetColor()
+    void SetColor(float fade)
     {
         fadeColor.a = fade;
         fader.color = fadeColor;

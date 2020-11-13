@@ -57,8 +57,8 @@ public class PlayerUI : MonoBehaviour
 
     private void Start()
     {
-        GlobalEvents.onPlayerChangedWeapon += OnPlayerChangedWeapon;
-        GlobalEvents.onPlayerChangedSkill += OnPlayerChangedSkill;
+        GlobalEvents.OnPlayerChangedWeapon += OnPlayerChangedWeapon;
+        GlobalEvents.OnPlayerChangedSkill += OnPlayerChangedSkill;
     }
 
     private void OnPlayerChangedWeapon(Weapon weap)
@@ -92,12 +92,12 @@ public class PlayerUI : MonoBehaviour
 
         //--- combo ---
 
-        if (GameManager.current.combo > 1)
+        if (Action_Combo.combo > 1)
         {
             if (!combo_go.activeSelf) combo_go.SetActive(true);
 
-            combo_fill.fillAmount = GameManager.current.comboTimer;
-            combo_label.text = $"x{GameManager.current.combo}";
+            combo_fill.fillAmount = Action_Combo.comboTimer;
+            combo_label.text = $"x{Action_Combo.combo}";
         }
         else
         {
@@ -142,6 +142,31 @@ public class PlayerUI : MonoBehaviour
     [Header("Canvas groupes")]
     public CanvasGroup gr_gameplay;
     public CanvasGroup gr_controls;
+
+    [Header("Confirmations")]
+    public GameObject mainButtons;
+    public GameObject newGameConfirm;
+    public GameObject exitConfirm;
+
+    [Header("Buttons")]
+    public Button loadGame;
+
+    public void AllowLoadGame(bool enable)
+    {
+        loadGame.interactable = enable;
+    }
+
+    public void Confirmation_NewGame(bool open)
+    {
+        mainButtons.SetActive(!open);
+        newGameConfirm.SetActive(open);
+    }
+
+    public void Confirmation_ExitGame(bool open)
+    {
+        mainButtons.SetActive(!open);
+        exitConfirm.SetActive(open);
+    }
 
     public void ToggleControls(bool enable, bool instant = false)
     {

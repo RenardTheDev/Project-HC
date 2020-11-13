@@ -8,6 +8,11 @@ using UnityEngine;
 
 public class Ship : MonoBehaviour
 {
+    Transform trans;
+
+    public int pilotID;
+    public Pilot pilot;
+
     public static Ship PLAYER;
 
     SpriteRenderer spr;
@@ -18,9 +23,11 @@ public class Ship : MonoBehaviour
 
     public int equippedWeapID = 0;
 
+    public string Name;
     public bool isPlayer;
-    public bool isInvulnerable;
+    public int teamID;
 
+    public bool isInvulnerable;
     public float health = 16;
     public float maxHealth = 16;
 
@@ -33,10 +40,6 @@ public class Ship : MonoBehaviour
 
     public bool isAlive { get => health > 0; }
 
-    public string Name = "Pilot#0000";
-
-    public int teamID = -1;
-
     public CircleCollider2D coll;
     public CircleCollider2D hitbox;
     public AudioSource sfx_source;
@@ -47,6 +50,8 @@ public class Ship : MonoBehaviour
 
     private void Awake()
     {
+        trans = transform;
+
         spr = GetComponent<SpriteRenderer>();
         rig = GetComponent<Rigidbody2D>();
         motor = GetComponent<ShipMotor>();
@@ -54,38 +59,16 @@ public class Ship : MonoBehaviour
         ai = GetComponent<ShipAI>();
 
         sfx_source = GetComponentInChildren<AudioSource>();
-
-        if (CompareTag("Player"))
-        {
-            MarkAsPlayer(true);
-        }
     }
 
-    public void MarkAsPlayer(bool mark)
+    public void AssignPilot(int pilotID)
     {
-        tag = mark ? "Player" : "Untagged";
-        isPlayer = mark;
+        this.pilotID = pilotID;
+        pilot = GameDataManager.data.GetPilot(pilotID);
 
-        teamID = 0;
-
-        ai.enabled = !mark;
-
-        if (mark)
-        {
-            PLAYER = this;
-            hitbox.radius = coll.radius;
-        }
-        else
-        {
-            if (teamID != PLAYER.teamID)
-            {
-                hitbox.radius = coll.radius;
-            }
-            else
-            {
-                hitbox.radius = coll.radius;
-            }
-        }
+        Name = pilot.Name;
+        isPlayer = pilot.isPlayer;
+        teamID = pilot.teamID;
     }
 
     public void ChangeSkin(Sprite newSkin, bool flipY)
@@ -94,9 +77,16 @@ public class Ship : MonoBehaviour
         spr.flipY = flipY;
     }
 
+    public void OnSpawned()
+    {
+        if (pilot.isPlayer)
+        {
+            PLAYER = this;
+        }
+    }
+
     private void OnCollisionEnter2D(Collision2D collision)
     {
-
         // collision shake effect //
 
         if (isPlayer)
@@ -117,7 +107,7 @@ public class Ship : MonoBehaviour
 
         if (collision.collider.TryGetComponent(out Ship ship))
         {
-            if (hitPower > 5f)
+            if (hitPower > 1f)
             {
                 ApplyDamage(ship, hitPower);
             }
@@ -126,7 +116,7 @@ public class Ship : MonoBehaviour
 
         if (collision.collider.TryGetComponent(out AsteroidEntity aster))
         {
-            if (hitPower > 5f)
+            if (hitPower > 1f)
             {
                 ApplyDamage(this, hitPower);
             }
@@ -144,7 +134,7 @@ public class Ship : MonoBehaviour
 
         if (health <= 20f)
         {
-            ParticleEffects.current.SpawnFire(transform.position);
+            ParticleEffects.current.SpawnFire(trans.position);
         }
     }
 
@@ -205,10 +195,10 @@ public class Ship : MonoBehaviour
 
         gameObject.SetActive(false);
 
-        ParticleEffects.current.SpawnExplosion(transform.position);
-        SFXShotSystem.current.SpawnExplosionSFX(transform.position, 0.1f);
+        ParticleEffects.current.SpawnExplosion(trans.position);
+        SFXShotSystem.current.SpawnExplosionSFX(trans.position, 0.1f);
 
-        CameraController.current.ExplosionImpulse(transform.position, isPlayer ? 10f : 1f);
+        CameraController.current.ExplosionImpulse(trans.position, isPlayer ? 10f : 1f);
     }
 
     public void Obliterate()
@@ -216,8 +206,8 @@ public class Ship : MonoBehaviour
         health = 0;
         gameObject.SetActive(false);
 
-        ParticleEffects.current.SpawnExplosion(transform.position);
-        SFXShotSystem.current.SpawnExplosionSFX(transform.position, 0.1f);
+        ParticleEffects.current.SpawnExplosion(trans.position);
+        SFXShotSystem.current.SpawnExplosionSFX(trans.position, 0.1f);
 
         var dmg = new Damage()
         {

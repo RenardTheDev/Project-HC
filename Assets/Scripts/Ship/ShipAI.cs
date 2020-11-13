@@ -11,6 +11,7 @@ public class ShipAI : MonoBehaviour
     List<Ship> enemies;
     Ship currEnemy;
     public LayerMask searchMask;
+    Collider2D[] overlapSearch;
 
     public AIState state = AIState.idle;
 
@@ -22,9 +23,16 @@ public class ShipAI : MonoBehaviour
     public bool isPlayer { get => ship.isPlayer; }
     public float health { get => ship.health; }
 
+    // cache //
+    Transform trans;
+    Transform enemyTrans;
+    Vector3 myPos;
+    Vector3 enemyPos;
 
     private void Awake()
     {
+        trans = transform;
+
         ship = GetComponent<Ship>();
         motor = GetComponent<ShipMotor>();
         weap = GetComponent<ShipWeapon>();
@@ -33,6 +41,8 @@ public class ShipAI : MonoBehaviour
 
         ship.onShipGetHit += OnShipGetHit;
         ship.onShipKilled += OnShipKilled;
+
+        overlapSearch = new Collider2D[30];
     }
 
     private void OnShipKilled(Damage dmg)
@@ -62,9 +72,10 @@ public class ShipAI : MonoBehaviour
         }
     }
 
+    float logicUpdateInterval = 0.25f;
     private void Start()
     {
-
+        InvokeRepeating("LogicUpdate", Random.value * logicUpdateInterval, logicUpdateInterval);
     }
 
     private void OnDrawGizmosSelected()
@@ -72,21 +83,38 @@ public class ShipAI : MonoBehaviour
         if (currEnemy != null)
         {
             Gizmos.color = Color.red;
-            Gizmos.DrawRay(transform.position, GetEnemyDirection());
+            Gizmos.DrawRay(trans.position, GetEnemyDirection());
         }
+        Gizmos.color = Color.blue;
+        Gizmos.DrawLine(trans.position, destination);
+
         Gizmos.color = Color.green;
-        Gizmos.DrawRay(transform.position, GetDestDirection());
+        Gizmos.DrawRay(trans.position, GetDestDirection());
+
+        if (currEnemy != null) Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(destination, 1f);
     }
 
-    private void Update()
+    private void LogicUpdate()
     {
-        ObstacleCheck();
+        if (!ship.isAlive) return;
+        //ObstacleCheck();
+
+        myPos = trans.position;
+        if (enemyTrans != null) enemyPos = enemyTrans.position;
 
         switch (state)
         {
-            case AIState.idle:
+            case AIState.idle: 
                 {
-                    destination = Random.insideUnitCircle * 100f;
+                    if (ship.pilot.important)
+                    {
+                        destination = ship.pilot.baseStation.positionV2 + Random.insideUnitCircle * 1000f;
+                    }
+                    else
+                    {
+                        destination = ship.pilot.baseStation.positionV2 + Random.insideUnitCircle * 1000f;
+                    }
                     ChangeState(AIState.roam);
                     break;
                 }
@@ -96,6 +124,7 @@ public class ShipAI : MonoBehaviour
                     {
                         CheckForEnemies();
                         if (currEnemy != null) ChangeState(AIState.attack);
+
                         motor.move = GetDestDirection().normalized;
                     }
                     else
@@ -144,7 +173,7 @@ public class ShipAI : MonoBehaviour
                             if (GetDistanceToEnemy() < 3)
                             {
                                 Vector3 rnd = Random.insideUnitCircle * 10f;
-                                destination = transform.position - GetEnemyDirection() * 30 + rnd;
+                                destination = trans.position - GetEnemyDirection() * 30 + rnd;
                                 isAvoiding = true;
                             }
                         }
@@ -166,7 +195,7 @@ public class ShipAI : MonoBehaviour
     Vector3 avoidVector;
     void ObstacleCheck()
     {
-        var HIT = Physics2D.CircleCastAll(transform.position, 0.5f, transform.up, 3f);
+        var HIT = Physics2D.CircleCastAll(trans.position, 0.5f, trans.up, 5f);
         avoidVector = Vector3.zero;
         for (int i = 0; i < HIT.Length; i++)
         {
@@ -178,7 +207,7 @@ public class ShipAI : MonoBehaviour
             }
             else
             {
-                avoidVector = hit.normal;
+                avoidVector = hit.normal * Mathf.Max(0, 5 - hit.distance);
                 break;
             }
         }
@@ -213,38 +242,49 @@ public class ShipAI : MonoBehaviour
         }
     }
 
+    Collider2D searchOverlap;
     void CheckForEnemies()
     {
         currEnemy = null;
+        enemyTrans = null;
+
         enemies.Clear();
 
-        for (int i = 0; i < ShipPool.current.activeList.Count; i++)
+        int overlaps = Physics2D.OverlapCircleNonAlloc(myPos, 100, overlapSearch, searchMask);
+        if (overlaps == 0)
         {
-            var sh = ShipPool.current.activeList[i].ship;
-            if (sh.teamID != ship.teamID && sh.isAlive)
-            { enemies.Add(sh); }
+            return;
+        }
+        else
+        {
+            for (int i = 0; i < overlaps; i++)
+            {
+                searchOverlap = overlapSearch[i];
+                if (searchOverlap.TryGetComponent(out Ship sh))
+                {
+                    if (sh.teamID != ship.teamID && sh.isAlive)
+                    { enemies.Add(sh); }
+                }
+            }
         }
 
         if (enemies.Count > 0)
         {
             currEnemy = enemies[Random.Range(0, enemies.Count)];
-        }
-        else
-        {
-            currEnemy = null;
+            enemyTrans = currEnemy.transform;
         }
     }
 
     float GetDistanceToDestination()
     {
-        return (transform.position - destination).magnitude;
+        return (myPos - destination).magnitude;
     }
 
     float GetDistanceToEnemy()
     {
         if (currEnemy != null && currEnemy.health > 0)
         {
-            return (transform.position - currEnemy.transform.position).magnitude;
+            return (myPos - enemyPos).magnitude;
         }
         else
         {
@@ -254,7 +294,7 @@ public class ShipAI : MonoBehaviour
 
     Vector3 GetDestDirection()
     {
-        Vector3 dir = destination - transform.position;
+        Vector3 dir = destination - myPos;
         return (dir.normalized + avoidVector).normalized;
     }
 
@@ -262,7 +302,7 @@ public class ShipAI : MonoBehaviour
     {
         if (currEnemy != null && currEnemy.health > 0)
         {
-            Vector3 dir = currEnemy.transform.position - transform.position;
+            Vector3 dir = enemyPos - myPos;
             return (dir.normalized + avoidVector).normalized;
         }
         else

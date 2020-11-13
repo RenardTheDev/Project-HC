@@ -5,7 +5,7 @@ using UnityEngine;
 public class ShipPool : MonoBehaviour
 {
     public static ShipPool current;
-    public GameObject _shipPrefab;
+    //public GameObject _shipPrefab;
 
     public List<ShipPoolEntry> activeList;
     public List<ShipPoolEntry> inactiveList;
@@ -16,6 +16,8 @@ public class ShipPool : MonoBehaviour
 
         activeList = new List<ShipPoolEntry>();
         inactiveList = new List<ShipPoolEntry>();
+
+        InvokeRepeating("UpdateCaching", 1000f, 1000f);
     }
 
     private void Start()
@@ -41,43 +43,63 @@ public class ShipPool : MonoBehaviour
         }
     }
 
-    public Ship SpawnPlayeShip(Vector2 pos, float rotation)
+    void UpdateCaching()
     {
-        Ship s = SpawnShip(pos, rotation);
+        for (int i = 0; i < activeList.Count; i++)
+        {
+            if (activeList[i].ship.health > 0)
+            {
+                activeList[i].pos = activeList[i].trans.position;
+            }
+        }
+    }
 
-        s.MarkAsPlayer(true);
-        s.Name = "Player";
+    public Ship SpawnShip(Pilot pilot)
+    {
+        return SpawnShip(new Vector2(pilot.saved_pos[0], pilot.saved_pos[1]), pilot.saved_pos[2], pilot);
+        /*if (GameDataManager.station_ent != null && GameDataManager.station_ent.ContainsKey(pilot.baseStation))
+        {
+            return SpawnShip(GameDataManager.station_ent[pilot.baseStation].spawn, Random.value * 360f, pilot);
+        }
+        else
+        {
+            return SpawnShip(new Vector2(pilot.saved_pos[0], pilot.saved_pos[1]), pilot.saved_pos[2], pilot);
+        }*/
+    }
+
+    public Ship SpawnShip(Vector2 pos, float rotation, Pilot pilot)
+    {
+        Vector2 spawn = pos;
+        for (int i = 0; i < 25; i++)
+        {
+            if (Physics2D.OverlapCircleAll(spawn, 1f).Length == 0)
+            {
+                break;
+            }
+            else
+            {
+                spawn = pos + Random.insideUnitCircle * 5f;
+            }
+        }
+
+        Ship s = SpawnShip(pos, rotation);
+        pilot.AssignShip(s);
+
         s.ChangeSkin(GameManager.current.team[0].GetRandomSkin(), false);
+        s.AssignPilot(GameDataManager.data.GetPilotID(pilot));
+
+        if (s.pilot.isPlayer)
+        {
+            CameraController.current.AssignTarget(s.transform);
+            PlayerUI.current.AssignTarget(s);
+        }
+        else
+        {
+            s.GetComponent<ShipAI>().enabled = true;
+        }
 
         GlobalEvents.ShipSpawned(s);
-
-        CameraController.current.AssignTarget(s.transform);
-        PlayerUI.current.AssignTarget(s);
-        return s;
-    }
-
-    public Ship SpawnEnemyShip(Vector2 pos, float rotation)
-    {
-        Ship s = SpawnShip(pos, rotation);
-
-        s.MarkAsPlayer(false);
-        s.Name = $"Pilot#{Random.value * 1000:0000}";
-        s.ChangeSkin(GameManager.current.team[1].GetRandomSkin(), false);
-
-        GlobalEvents.ShipSpawned(s);
-        return s;
-    }
-
-    public Ship SpawnTeamShip(Vector2 pos, float rotation, int team)
-    {
-        Ship s = SpawnShip(pos, rotation);
-
-        s.MarkAsPlayer(false);
-        s.teamID = team;
-        s.Name = $"{NameGenerator.Generate()} {NameGenerator.Generate()}";
-        s.ChangeSkin(GameManager.current.team[team].GetRandomSkin(), false);
-
-        GlobalEvents.ShipSpawned(s);
+        s.OnSpawned();
         return s;
     }
 
@@ -86,6 +108,18 @@ public class ShipPool : MonoBehaviour
         foreach (var item in activeList)
         {
             if (item.ship.isAlive) item.ship.Hide();
+        }
+    }
+
+    public void HideShip(Pilot pilot)
+    {
+        for (int i = 0; i < activeList.Count; i++)
+        {
+            if(activeList[i].ship.pilotID == GameDataManager.data.GetPilotID(pilot))
+            {
+                activeList[i].ship.Hide();
+                break;
+            }
         }
     }
 
@@ -129,7 +163,7 @@ public class ShipPool : MonoBehaviour
 
     ShipPoolEntry CreateNewShip()
     {
-        var go = Instantiate(_shipPrefab);
+        var go = Instantiate(PrefabManager.ship);
         ShipPoolEntry p = new ShipPoolEntry(go);
 
         GlobalEvents.ShipPoolCreatedNewInstance(p.ship);
@@ -143,7 +177,7 @@ public class ShipPool : MonoBehaviour
     {
         for (int i = 0; i < count; i++)
         {
-            var go = Instantiate(_shipPrefab);
+            var go = Instantiate(PrefabManager.ship);
             ShipPoolEntry p = new ShipPoolEntry(go);
 
             GlobalEvents.ShipPoolCreatedNewInstance(p.ship);
@@ -170,9 +204,14 @@ public class ShipPoolEntry
     public Ship ship;
     public float deadTimer;
 
+    // cache //
+    public Transform trans;
+    public Vector3 pos;
+
     public ShipPoolEntry(GameObject gameObject)
     {
         go = gameObject;
+        trans = go.transform;
         ship = go.GetComponent<Ship>();
     }
 

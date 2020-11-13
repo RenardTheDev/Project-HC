@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class GameManager : MonoBehaviour
 {
@@ -12,16 +13,19 @@ public class GameManager : MonoBehaviour
     public static GameState gameState = GameState.MainMenu;
 
     // combo ///
-    public float comboTimer;
-    public int combo = 1;
 
     public List<Weapon> weapons;
 
     // audios //
     public AudioClip sfx_gameOver;
 
+    public Vector2 WorldCenter;
+    public float WorldRadius;
+
     private void Awake()
     {
+        //prefabs = _prefabs;
+
         NameGenerator.Setup(4, 8, 2, 1);
 
         if (current==null)
@@ -34,72 +38,19 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
         }
 
-        GlobalEvents.onShipKilled += OnShipKilled;
+        if (GameDataManager.CheckForSavedGame())
+        {
+            PlayerUI.current.AllowLoadGame(true);
+        }
+        else
+        {
+
+        }
     }
 
     private void Start()
     {
-        /*weapons = new List<Weapon>();
-
-        string[] files = AssetDatabase.FindAssets("t:Weapon");
-        for (int i = 0; i < files.Length; i++)
-        {
-            var path = AssetDatabase.GUIDToAssetPath(files[i]);
-            var w = AssetDatabase.LoadAssetAtPath<Weapon>(path);
-
-            if (w is Weapon_Homing) continue;
-
-            weapons.Add(w);
-        }*/
-
-        //ScreenFade.curr.FadeOUT(0.25f, 1f);
         PlayerUI.current.ToggleStartScreen(true);
-    }
-
-    private void OnShipKilled(Damage dmg)
-    {
-        if (dmg.attacker != null && dmg.attacker.isPlayer)
-        {
-            if (comboTimer > 0)
-            {
-                combo++;
-            }
-            comboTimer = 1;
-        }
-
-        if (dmg.victim.isPlayer)
-        {
-            StartCoroutine(GameOverProcess());
-        }
-        else
-        {
-            for (int i = 0; i < team.Length; i++)
-            {
-                if (AIs[i].Contains(dmg.victim))
-                {
-                    AIs[i].Remove(dmg.victim);
-                    if (TeamPlayerCount(i) < maxPlayers / team.Length)
-                        SpawnAI(i);
-                }
-            }
-        }
-    }
-
-    private void Update()
-    {
-        if (combo > 1)
-        {
-            comboTimer = Mathf.MoveTowards(comboTimer, 0f, Time.deltaTime * Mathf.Pow(combo, 0.5f) * 0.2f);
-
-            if (comboTimer <= 0)
-            {
-                combo = 1;
-            }
-        }
-        else
-        {
-            comboTimer = Mathf.MoveTowards(comboTimer, 0f, Time.deltaTime * 0.25f);
-        }
     }
 
     public int maxPlayers;
@@ -114,6 +65,8 @@ public class GameManager : MonoBehaviour
         {
             if (maxPlayers <= 0) maxPlayers = 1;
 
+            // asteroids //
+
             Vector3 circle = Random.insideUnitCircle.normalized;
 
             AsteroidSize size = AsteroidSize.big;
@@ -122,68 +75,9 @@ public class GameManager : MonoBehaviour
             if (rng > 0.50f) size = AsteroidSize.small;
             if (rng > 0.75f) size = AsteroidSize.medium;
 
-            if (Ship.PLAYER != null) AsteroidSystem.current.SpawnAsteroid(Ship.PLAYER.transform.position + circle * 40f, size, true);
-
-            // skirmish //
-
-            if (PlayerCount() < maxPlayers - 1)
-            {
-                for (int i = 0; i < team.Length; i++)
-                {
-                    while (TeamPlayerCount(i) < maxPlayers / team.Length)
-                    {
-                        SpawnAI(i);
-                        yield return new WaitForEndOfFrame();
-                    }
-                }
-            }
-
-            if (PlayerCount() > maxPlayers - 1)
-            {
-                for (int i = 0; i < team.Length; i++)
-                {
-                    if (TeamPlayerCount(i) > maxPlayers / team.Length)
-                    {
-                        AIs[i][0].Obliterate();
-                        AIs[i].RemoveAt(0);
-                    }
-                }
-            }
+            if (Ship.PLAYER != null) AsteroidSystem.current.SpawnAsteroid(Ship.PLAYER.transform.position + circle * Camera.main.orthographicSize * 2.5f, size, true);
 
             yield return new WaitForSeconds(1f);
-        }
-    }
-
-    void SpawnAI(int teamID)
-    {
-        if (Ship.PLAYER == null || !Ship.PLAYER.isAlive) return;
-
-        var ship = ShipPool.current.SpawnTeamShip(Random.insideUnitCircle * 100, Random.value * 360f, teamID);
-        AIs[teamID].Add(ship);
-        ship.weap.AssignWeapon(weapons[Random.Range(0, weapons.Count)]);
-    }
-
-    int PlayerCount()
-    {
-        int value = 0;
-
-        for (int i = 0; i < team.Length; i++)
-        {
-            if (AIs.ContainsKey(i)) value += AIs[i].Count;
-        }
-
-        return value;
-    }
-
-    int TeamPlayerCount(int team)
-    {
-        if (AIs.ContainsKey(team))
-        {
-            return AIs[team].Count;
-        }
-        else
-        {
-            return 0;
         }
     }
 
@@ -235,23 +129,53 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void StartGame()
+    public void StartGame(bool newGame)
     {
-        ShipPool.current.SpawnPlayeShip(Vector2.zero, 0f);
+        StartCoroutine(StartingSequence(newGame));
+    }
 
-        Ship.PLAYER.weap.AssignWeapon(weapons[Random.Range(0, weapons.Count)]);
+    public void test_SpawnMinions()
+    {
+        for (int i = 0; i < GameDataManager.data.stations.Count; i++)
+        {
+            var station = GameDataManager.data.GetStation(i);
+            for (int p = 0; p < 20; p++)
+            {
+                Pilot minion = new Pilot(false, false, $"Generic Pilot#{Random.Range(0, 1000):000}", station.teamID, i);
+                GameDataManager.data.pilots.Add(minion);
+                ShipPool.current.SpawnShip(minion);
+            }
+        }
+    }
+
+    IEnumerator StartingSequence(bool newGame)
+    {
+        ScreenFade.curr.FadeINOUT(0, 1f, 1f, 1f);
+        yield return new WaitForSecondsRealtime(1f);
 
         PlayerUI.current.ToggleControls(true);
         PlayerUI.current.ToggleGameplayUI(true);
         PlayerUI.current.ToggleStartScreen(false);
 
+        if (newGame)
+        {
+            GameDataManager.GenerateNewGameData();
+        }
+        else
+        {
+            GameDataManager.LoadGame();
+        }
+
+        WorldCenter = GameDataManager.data.GetWorldCenter();
+        WorldRadius = GameDataManager.data.GetWorldRadius();
+
         ChangeGameState(GameState.Game);
 
-        AIs = new Dictionary<int, List<Ship>>();
-        for (int i = 0; i < team.Length; i++)
-        {
-            AIs.Add(i, new List<Ship>());
-        }
+        yield return new WaitForEndOfFrame();
+        GameDataManager.SpawnStations();
+        yield return new WaitForEndOfFrame();
+        GameDataManager.SpawnShips();
+        yield return new WaitForEndOfFrame();
 
         if (cor_Logic != null) StopCoroutine(cor_Logic);
         cor_Logic = StartCoroutine(LogicUpdate());
@@ -259,24 +183,29 @@ public class GameManager : MonoBehaviour
 
     public void GoToMainMenu()
     {
+        ScreenFade.curr.FadeINOUT(0, 0f, 0.1f, 1f);
+
         PlayerUI.current.ToggleControls(false);
         PlayerUI.current.ToggleGameplayUI(false);
         PlayerUI.current.ToggleStartScreen(true);
         PlayerUI.current.TogglePauseScreen(false);
+
+        GameDataManager.SaveGame();
 
         ChangeGameState(GameState.MainMenu);
 
         ShipPool.current.HideShips();
         AsteroidSystem.current.HideAsteroids();
 
+        Time.timeScale = 1;
+
         if (cor_Logic != null) StopCoroutine(cor_Logic);
     }
 
     void ChangeGameState(GameState newState)
     {
+        GlobalEvents.GameStateChanged(gameState, newState);
         gameState = newState;
-
-        GlobalEvents.GameStateChanged(newState);
     }
 
     public void ExitGame()
