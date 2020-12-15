@@ -8,19 +8,24 @@ public class StationEntity : MonoBehaviour
     public Transform spawnPoint;
 
     public Vector2 spawn { get => spawnPoint.position; }
-    public string Name { get => station.Name; }
-    public int teamID { get => station.teamID; }
+    public string Name { get => station.data.Name; }
+    public int teamID { get => station.data.teamID; }
 
     private void Awake()
     {
         GlobalEvents.OnGameStateChanged += OnGameStateChanged;
     }
 
+    private void OnDestroy()
+    {
+        GlobalEvents.OnGameStateChanged -= OnGameStateChanged;
+    }
+
     private void OnGameStateChanged(GameState oldState, GameState newState)
     {
         if (newState == GameState.MainMenu)
         {
-            GlobalEvents.OnGameStateChanged -= OnGameStateChanged;
+            GlobalEvents.StationDespawned(this);
             Destroy(gameObject);
         }
     }

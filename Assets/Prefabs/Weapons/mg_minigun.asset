@@ -10,23 +10,23 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ef58e39811b048948bfeb902bfec3321, type: 3}
-  m_Name: Machinegun
+  m_Name: mg_minigun
   m_EditorClassIdentifier: 
   owner: {fileID: 0}
   trans: {fileID: 0}
   WEAPON_ID: 0
-  Name: Machinegun
+  Name: Minigun
   bulletSprite: {fileID: 21300000, guid: ac8452362bb10f34f9b524e633c00178, type: 3}
   sfx: {fileID: 8300000, guid: 298d35d23d4e92e4fa8f5c0de52d8587, type: 3}
   volume: 0.1
   ui_prefab: {fileID: 1094492481283369554, guid: 98cc3d1dcf6a32e4da5018f96b34ec07,
     type: 3}
-  damage: 10
-  fireRate: 600
-  spread: 1
-  lvld_damage: 10
-  lvld_fireRate: 600
-  lvld_spread: 1
+  damage: 3.75
+  fireRate: 800
+  spread: 5
+  lvld_damage: 3.75
+  lvld_fireRate: 800
+  lvld_spread: 5
   BuyCost: 1000
   levelCost: 150
   level: 1
@@ -36,6 +36,8 @@ MonoBehaviour:
     radius: 0.25
     color: {r: 0.6862745, g: 0.86274517, b: 0.95294124, a: 1}
     impact: 2
-  reloadDelay: 1
-  clip: 30
-  clipSize: 30
+  reloadDelay: 2.5
+  clip: 150
+  clipSize: 150
+  autoReloadDelay: 1
+  autoReloadSpeed: 5

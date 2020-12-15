@@ -34,7 +34,28 @@ public class ShipStatsUI : MonoBehaviour
 
     public void AssigneTarget(Ship ship)
     {
+        if (target!=null)
+        {
+            target.onBoostReady -= OnBoostReady;
+            target.onBoostUsed -= OnBoostUsed;
+        }
+
         target = ship;
+
+        target.onBoostReady += OnBoostReady;
+        target.onBoostUsed += OnBoostUsed;
+
+        PlayerInputs.current.accel_circle.color = new Color(1, 1, 1, target.motor.boostReady ? 0.5f : 0.05f);
+    }
+
+    private void OnBoostUsed()
+    {
+        PlayerInputs.current.accel_circle.color = new Color(1, 1, 1, 0.05f);
+    }
+
+    private void OnBoostReady()
+    {
+        PlayerInputs.current.accel_circle.color = new Color(1, 1, 1, 0.5f);
     }
 
     private void OnShipGetHit(Damage dmg)
@@ -115,6 +136,8 @@ public class ShipStatsUI : MonoBehaviour
             if (sh_box.activeSelf) sh_box.SetActive(false);
         }
         //--------------
+
+        PlayerInputs.current.accel_circle.fillAmount = target.motor.boost;
     }
 
 

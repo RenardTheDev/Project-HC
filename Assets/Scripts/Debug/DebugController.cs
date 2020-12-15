@@ -5,17 +5,22 @@ using UnityEngine;
 public class DebugController : MonoBehaviour
 {
     public bool showConsole;
-    public bool showHelp;
 
     public string input;
 
     public static DebugCommand HELP;
 
+    public static List<string> lines;
+    public static List<string> lastInputs;
+    int lastSelectedInput = -1;
+
     // game //
 
     public static DebugCommand KILL_ALL;
     public static DebugCommand<float> TIME_SCALE;
-    public static DebugCommand<int> SET_MAX_PLAYERS;
+    //public static DebugCommand<int> SET_MAX_PLAYERS;
+
+    public static DebugCommand<int> PILOTS;
 
     // camera //
 
@@ -34,9 +39,16 @@ public class DebugController : MonoBehaviour
     {
         HELP = new DebugCommand("help", "Shows available console commands.", "help", () =>
         {
-            showHelp = true;
+            for (int i = 0; i < commandList.Count; i++)
+            {
+                DebugCommandBase command = commandList[i] as DebugCommandBase;
+                string label = $"{command.commandFormat} - {command.commandDescription}";
+                WriteLine(label);
+            }
         });
 
+        lines = new List<string>(); 
+        lastInputs = new List<string>();
 
         // game //
 
@@ -48,10 +60,43 @@ public class DebugController : MonoBehaviour
         {
             Time.timeScale = x;
         }, 1f);
-        SET_MAX_PLAYERS = new DebugCommand<int>("max_players", "Sets the maximum player setting.", "max_players [int]", (x) =>
+        /*SET_MAX_PLAYERS = new DebugCommand<int>("max_players", "Sets the maximum player setting.", "max_players [int]", (x) =>
         {
-            GameManager.current.maxPlayers = x;
-        }, 10);
+            GameManager.inst.maxPlayers = x;
+        }, 10);*/
+
+        PILOTS = new DebugCommand<int>("pilots", "Shows list of pilots in current game. [0 - In game manager data, 1 - search by class]", "pilots [int]", (x) =>
+            {
+                switch (x)
+                {
+                    case 0:
+                        {
+                            foreach (var p in GameDataManager.pilots)
+                            {
+                                WriteLine($"[{p.Key}] {p.Value.data.Name}, " +
+                                    $"baseStation = [{p.Value.data.baseStationID}] {GameDataManager.GetStation(p.Value.data.baseStationID).data.Name}, " +
+                                    $"currStationID = [{p.Value.data.currStationID}] {GameDataManager.GetStation(p.Value.data.currStationID).data.Name}");
+                            }
+                            break;
+                        }
+                    case 1:
+                        {
+                            WriteLine("<color=grey>Not implemented</color>");
+                            /*Pilot[] pilots = FindObjectsOfType(typeof(Pilot));
+
+                            foreach (var p in GameDataManager.pilots)
+                            {
+                                WriteLine($"[{p.Key}] {p.Value.data.Name}, " +
+                                    $"baseStation = [{p.Value.data.baseStationID}] {GameDataManager.GetStation(p.Value.data.baseStationID).data.Name}, " +
+                                    $"currStationID = [{p.Value.data.currStationID}] {GameDataManager.GetStation(p.Value.data.currStationID).data.Name}");
+                            }*/
+                            break;
+                        }
+                    default:    WriteLine("<color=red>Error:</color> pilots [0-1]");
+                        break;
+                }
+                
+            }, 0);
 
 
         // camera //
@@ -82,7 +127,8 @@ public class DebugController : MonoBehaviour
 
             KILL_ALL,
             TIME_SCALE,
-            SET_MAX_PLAYERS,
+            //SET_MAX_PLAYERS,
+            PILOTS,
 
             SET_ORTHO_SIZE,
 
@@ -97,6 +143,24 @@ public class DebugController : MonoBehaviour
         {
             OnConsoleToggle(!showConsole);
         }
+
+        if (showConsole && lastInputs.Count > 0)
+        {
+            if (Input.GetKeyDown(KeyCode.UpArrow))
+            {
+                lastSelectedInput++;
+                if (lastSelectedInput > lastInputs.Count-1) lastSelectedInput = lastInputs.Count - 1;
+
+                input = lastInputs[lastSelectedInput];
+            }
+            if (Input.GetKeyDown(KeyCode.DownArrow))
+            {
+                lastSelectedInput--;
+                if (lastSelectedInput < 0) lastSelectedInput = 0;
+
+                input = lastInputs[lastSelectedInput];
+            }
+        }
     }
 
     void OnConsoleToggle(bool toggle)
@@ -105,31 +169,39 @@ public class DebugController : MonoBehaviour
         if (GameManager.gameState == GameState.Game) Time.timeScale = toggle ? 0 : 1;
     }
 
+    public void WriteLine(string line)
+    {
+        lines.Add(line);
+        viewport = new Rect(0, 0, Screen.width - 30, 20 * lines.Count);
+        scroll = new Vector2(0, viewport.height - Screen.height * 0.75f);
+    }
+
     Vector2 scroll;
+    Rect viewport;
     private void OnGUI()
     {
         if (!showConsole) return;
 
         float y = 0;
 
-        if (showHelp)
+        // console log //
+
+        GUI.Box(new Rect(0, y, Screen.width, Screen.height * 0.75f + 28), "");
+        viewport = new Rect(0, 0, Screen.width - 30, 20 * lines.Count);
+        scroll = GUI.BeginScrollView(new Rect(0, y + 5, Screen.width, Screen.height * 0.75f), scroll, viewport);
+
+        for (int i = 0; i < lines.Count; i++)
         {
-            GUI.Box(new Rect(0, y, Screen.width, 128), "");
-            Rect viewport = new Rect(0, y, Screen.width - 30, 20 * commandList.Count);
-            scroll = GUI.BeginScrollView(new Rect(0, y + 5, Screen.width, 90), scroll, viewport);
-
-            for (int i = 0; i < commandList.Count; i++)
-            {
-                DebugCommandBase command = commandList[i] as DebugCommandBase;
-                string label = $"{command.commandFormat} - {command.commandDescription}";
-                Rect labelrect = new Rect(5, 20 * i, viewport.width - 100, 20);
-                GUI.Label(labelrect, label);
-            }
-
-            GUI.EndScrollView();
-
-            y += 100;
+            string label = lines[i];
+            Rect labelrect = new Rect(5, 20 * i, viewport.width - 100, 20);
+            GUI.Label(labelrect, label);
         }
+
+        GUI.EndScrollView();
+
+        y += Screen.height * 0.75f + 10;
+
+        // input field //
 
         GUI.Box(new Rect(0, y, Screen.width, 30), "");
         GUI.backgroundColor = new Color(0, 0, 0, 0);
@@ -141,6 +213,12 @@ public class DebugController : MonoBehaviour
 
     private void HandleInput()
     {
+        if (input.Length < 1) return;
+
+        WriteLine($"<color=red>></color> {input}");
+        lastInputs.Insert(0, input);
+        lastSelectedInput = -1;
+
         string[] properties = input.Split(' ');
 
         for (int i = 0; i < commandList.Count; i++)
@@ -170,5 +248,6 @@ public class DebugController : MonoBehaviour
 
         //OnConsoleToggle(false);
         input = "";
+
     }
 }

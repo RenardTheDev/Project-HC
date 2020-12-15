@@ -86,6 +86,8 @@ public class FixedJoystick : MonoBehaviour, IPointerDownHandler, IPointerUpHandl
 
     void StateChange(bindState newState)
     {
+        if (!gameObject.activeSelf) return;
+
         state = newState;
 
         if (gameObject.activeSelf)

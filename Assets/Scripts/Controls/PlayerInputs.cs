@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerInputs : MonoBehaviour
 {
@@ -11,6 +12,9 @@ public class PlayerInputs : MonoBehaviour
     public FixedJoystick t_aimShoot;
     public FixedButton t_fire;
     public FixedButton t_skill;
+    public FixedButton t_accel;
+
+    public Image accel_circle;
 
     public float shootThreshold = 0.25f;
 
@@ -21,6 +25,7 @@ public class PlayerInputs : MonoBehaviour
     public static bool _shoot;
     public static bindState _fire;
     public static bindState _skill;
+    public static bindState _accel;
 
     public static float screenRatio;
     public static float screenHeight;
@@ -29,7 +34,7 @@ public class PlayerInputs : MonoBehaviour
     private void Awake()
     {
         current = this;
-
+        accel_circle = t_accel.GetComponent<Image>();
         GlobalEvents.OnControlsChanged += OnControlsChanged;
     }
 
@@ -46,6 +51,7 @@ public class PlayerInputs : MonoBehaviour
         _shoot = t_aimShoot.InputVector.magnitude > shootThreshold;
         _fire = t_fire.state;
         _skill = t_skill.state;
+        _accel = t_accel.state;
 
         screenHeight = Screen.height;
         screenWidth = Screen.width;

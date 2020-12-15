@@ -1,45 +1,108 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[System.Serializable]
 public class Station 
 {
-    public string Name = "Station #";
-    public int ownerID;
+    public StationData data;
+    public StationEntity ent;
 
-    public int teamID { get => GameDataManager.data.pilots[ownerID].teamID; }
-
-    public List<int> pilots;
-
-    public Vector2 positionV2 { get => new Vector2(position[0], position[1]); }
-    public float[] position = new float[3];    // x,y - pos / z - rotation
-
-    public Station(string name, int ownerID)
+    public Station(StationData stationData)
     {
-        Name = name;
-        this.ownerID = ownerID;
+        data = stationData;
+        GlobalEvents.OnActiveStationChanged += OnActiveStationChanged;
+        GlobalEvents.OnShipKilled += OnShipKilled;
+    }
 
-        //pilots = new List<int>();
+    public void UnlinkEvents()
+    {
+        GlobalEvents.OnActiveStationChanged -= OnActiveStationChanged;
+        GlobalEvents.OnShipKilled -= OnShipKilled;
+    }
+
+    private void OnShipKilled(Damage dmg)
+    {
+        var victim = dmg.victim.pilot;
+        if (!victim.data.important && victim.data.baseStationID == data.ID)
+        {
+            RemoveFleetPilot(dmg.victim.pilot);
+        }
+    }
+
+    public void AddFleetPilot(Pilot pilot)
+    {
+        if (!data.fleet.Contains(pilot.data.ID))
+        {
+            data.fleet.Add(pilot.data.ID);
+        }
+    }
+
+    public void RemoveFleetPilot(Pilot pilot)
+    {
+        if (data.fleet.Contains(pilot.data.ID))
+        {
+            data.fleet.Remove(pilot.data.ID);
+        }
+    }
+
+    private void OnActiveStationChanged(Station oldStation, Station newStation)
+    {
+        if (newStation == this)
+        {
+            var stGO = UnityEngine.Object.Instantiate(PrefabManager.inst.station[0], Vector3.zero, Quaternion.Euler(0, 0, data.position[2]));
+            ent = stGO.GetComponent<StationEntity>();
+            ent.station = this;
+
+            GlobalEvents.StationSpawned(ent);
+        }
+        if (oldStation == this)
+        {
+            GlobalEvents.StationDespawned(ent);
+
+            UnityEngine.Object.Destroy(ent.gameObject, 0);
+            ent = null;
+        }
+    }
+
+    public void AssignStationEntity(StationEntity stEnt)
+    {
+        ent = stEnt;
     }
 
     public void SetName(string newName)
     {
-        Name = newName;
+        data.Name = newName;
     }
 
     public void SetOwner(int newOwnerID)
     {
-        ownerID = newOwnerID;
+        data.ownerID = newOwnerID;
     }
 
-    public void PilotEnterStation(Pilot pilot)
+    public Pilot GetOwner()
     {
-        pilots.Add(GameDataManager.data.GetPilotID(pilot));
+        return GameDataManager.pilots[data.ownerID];
     }
+    public int GetTeam()
+    {
+        return GameDataManager.pilots[data.ownerID].data.teamID;
+    }
+}
 
-    public void PilotLeaveStation(Pilot pilot)
-    {
-        pilots.Remove(GameDataManager.data.GetPilotID(pilot));
-    }
+[System.Serializable]
+public class StationData
+{
+    public string Name = "Station #";
+    public int ID;
+    public int ownerID;
+    public List<int> fleet;
+    // x,y - pos / z - rotation
+    // position on global map, rotation in game
+    public float[] position = new float[3];
+
+    public int fleetQueue;  //ships on processing
+
+    public int teamID { get => GameDataManager.data.pilotsInfo[ownerID].teamID; }
+    public Vector2 positionV2 { get => new Vector2(position[0], position[1]); }
 }

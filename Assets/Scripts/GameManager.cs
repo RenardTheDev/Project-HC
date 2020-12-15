@@ -6,11 +6,15 @@ using UnityEngine.UIElements;
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager current;
+    public static GameManager inst;
 
     public Team[] team;
 
     public static GameState gameState = GameState.MainMenu;
+
+    // Layer masks //
+
+    public LayerMask ai_enemySearchMask;
 
     // combo ///
 
@@ -28,9 +32,9 @@ public class GameManager : MonoBehaviour
 
         NameGenerator.Setup(4, 8, 2, 1);
 
-        if (current==null)
+        if (inst==null)
         {
-            current = this;
+            inst = this;
             DontDestroyOnLoad(gameObject);
         }
         else
@@ -38,13 +42,17 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
         }
 
-        if (GameDataManager.CheckForSavedGame())
-        {
-            PlayerUI.current.AllowLoadGame(true);
-        }
-        else
-        {
+        PlayerUI.current.AllowLoadGame(GameDataManager.CheckForSavedGame());
 
+        GlobalEvents.OnShipKilled += OnShipKilled;
+    }
+
+    private void OnShipKilled(Damage dmg)
+    {
+        Pilot victim = dmg.victim.pilot;
+        if (dmg.deathReason == DeathReason.killed && !victim.data.important)
+        {
+            GameDataManager.RemovePilot(victim);
         }
     }
 
@@ -134,16 +142,32 @@ public class GameManager : MonoBehaviour
         StartCoroutine(StartingSequence(newGame));
     }
 
+    public void TransferToNewLocation(Station station)
+    {
+        Station currStation = GameDataManager.GetCurrentStation();
+        if (currStation.data.ID == station.data.ID) return;
+
+        GameDataManager.data.currentActiveStation = station.data.ID;
+
+        GlobalEvents.ActiveStationChanged(currStation, station);
+    }
+
     public void test_SpawnMinions()
     {
-        for (int i = 0; i < GameDataManager.data.stations.Count; i++)
+        for (int i = 0; i < GameDataManager.stations.Count; i++)
         {
-            var station = GameDataManager.data.GetStation(i);
+            var station = GameDataManager.GetStation(i);
             for (int p = 0; p < 20; p++)
             {
-                Pilot minion = new Pilot(false, false, $"Generic Pilot#{Random.Range(0, 1000):000}", station.teamID, i);
-                GameDataManager.data.pilots.Add(minion);
-                ShipPool.current.SpawnShip(minion);
+                Pilot minion = new Pilot(false, false, "Generic Pilot", station.data.teamID, i);
+                GameDataManager.AddPilot(minion);
+                minion.data.Name = $"pilot_{minion.data.baseStationID}_{minion.data.ID}";
+                minion.data.currStationID = i;
+
+                if (i == GameDataManager.data.currentActiveStation)
+                {
+                    ShipPool.current.SpawnShip(minion);
+                }
             }
         }
     }
@@ -163,7 +187,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            GameDataManager.LoadGame();
+            GameDataManager.LoadGameData();
         }
 
         WorldCenter = GameDataManager.data.GetWorldCenter();
@@ -172,7 +196,7 @@ public class GameManager : MonoBehaviour
         ChangeGameState(GameState.Game);
 
         yield return new WaitForEndOfFrame();
-        GameDataManager.SpawnStations();
+        GameDataManager.SpawnActiveStation();
         yield return new WaitForEndOfFrame();
         GameDataManager.SpawnShips();
         yield return new WaitForEndOfFrame();
@@ -192,14 +216,16 @@ public class GameManager : MonoBehaviour
 
         GameDataManager.SaveGame();
 
-        ChangeGameState(GameState.MainMenu);
-
         ShipPool.current.HideShips();
         AsteroidSystem.current.HideAsteroids();
+
+        ChangeGameState(GameState.MainMenu);
 
         Time.timeScale = 1;
 
         if (cor_Logic != null) StopCoroutine(cor_Logic);
+
+        PlayerUI.current.AllowLoadGame(GameDataManager.CheckForSavedGame());
     }
 
     void ChangeGameState(GameState newState)

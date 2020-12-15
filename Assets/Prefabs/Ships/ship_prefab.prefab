@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 3724433465629847089}
   - component: {fileID: 3724433465629847094}
   - component: {fileID: 3724433465629847090}
-  - component: {fileID: -5946286975338358672}
+  - component: {fileID: 7835492401736284970}
   m_Layer: 9
   m_Name: ship_prefab
   m_TagString: Untagged
@@ -141,11 +141,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d476c69ca864908419e29d9d6cb45b0b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  pilotID: 0
   weap: {fileID: 0}
   motor: {fileID: 0}
+  ai: {fileID: 0}
   equippedWeapID: 0
+  Name: Pilot#0000
   isPlayer: 0
-  isHunter: 0
+  teamID: 0
+  isInvulnerable: 0
   health: 100
   maxHealth: 100
   shield: 0
@@ -153,8 +157,6 @@ MonoBehaviour:
   shieldRegen: 0.1
   damageMult: 1
   damageResist: 0
-  Name: Pilot#0000
-  team: 0
   coll: {fileID: 98224009889940812}
   hitbox: {fileID: 8649464524217813147}
   sfx_source: {fileID: 0}
@@ -171,12 +173,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   accel: 20
-  maxSpeed: 50
+  maxSpeed: 10
   move: {x: 0, y: 0}
+  aim: {x: 0, y: 0}
+  boostPower: 10
+  boost: 0
+  boostConsumeRate: 0.25
+  boostRestoreRate: 0.1
+  boosting: 0
+  boostReady: 0
+  velocity: {x: 0, y: 0}
+  veloMagnitude: 0
   targetAngle: 0
   angle: 0
+  rotationTarget: {x: 0, y: 0}
   turnSmoothTime: 0.1
   turnSmoothVelocity: 0
+  rotateToMovement: 0
 --- !u!114 &3724433465629847090
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -195,14 +208,14 @@ MonoBehaviour:
   skill_trig: 0
   skill_cd: 0
   skill_cd_mult: 1
---- !u!114 &-5946286975338358672
+--- !u!114 &7835492401736284970
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3724433465629847093}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3fc109d7a39cda147a9d27002ac34e91, type: 3}
   m_Name: 
@@ -212,7 +225,6 @@ MonoBehaviour:
     m_Bits: 512
   state: 0
   isAvoiding: 0
-  isAttacker: 0
 --- !u!1 &3724433466071998474
 GameObject:
   m_ObjectHideFlags: 0

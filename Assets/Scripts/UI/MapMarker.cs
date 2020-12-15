@@ -1,53 +1,96 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class MapMarker : MonoBehaviour
+public class MapMarker : MonoBehaviour, IPointerDownHandler
 {
     RectTransform rect;
     public RectTransform icon_pivot;
     public Image icon;
+    public Image nameTagBG;
     public Text nameTag;
 
     public MarkerType markerType;
 
     // castet target //
-    Ship t_Ship;
-    StationEntity t_StationEnt;
+    public Ship t_Ship;
+    public Station t_Station;
 
     private void Awake()
     {
         rect = GetComponent<RectTransform>();
     }
 
-    public void Assign(Component comp)
+    public void Assign(Ship shipTarget)
     {
-        if (comp is Ship)
+        markerType = MarkerType.ship;
+        t_Ship = shipTarget;
+        UpdateGraphics();
+    }
+
+    public void Assign(Station stationTarget)
+    {
+        markerType = MarkerType.station;
+        t_Station = stationTarget;
+        UpdateGraphics();
+    }
+
+    public void UpdateGraphics()
+    {
+        switch (markerType)
         {
-            markerType = MarkerType.ship;
+            case MarkerType.ship:
+                {
+                    icon_pivot.sizeDelta = Vector2.one * 8f;
+                    icon.sprite = PrefabManager.inst.marker_ship;
+                    icon.color = GameManager.inst.team[t_Ship.teamID].teamColor;
 
-            t_Ship = (Ship)comp;
+                    nameTag.enabled = t_Ship.pilot.data.important && MapSystem.zoomLevel == 1;
+                    nameTag.text = t_Ship.Name;
+                    break;
+                }
+            case MarkerType.station:
+                {
+                    icon_pivot.sizeDelta = Vector2.one * 10f;
+                    icon.sprite = PrefabManager.inst.marker_station;
+                    icon.color = GameManager.inst.team[t_Station.data.teamID].teamColor;
 
-            icon_pivot.sizeDelta = Vector2.one * 8f;
-            icon.sprite = PrefabManager.marker_ship;
-            icon.color = GameManager.current.team[t_Ship.teamID].teamColor;
+                    nameTag.enabled = true;
+                    nameTag.text = t_Station.data.Name;
 
-            nameTag.enabled = t_Ship.pilot.important && MapSystem.zoomLevel == 1;
-            nameTag.text = t_Ship.Name;
+                    bool isActive = t_Station.data.ID == GameDataManager.data.currentActiveStation;
+
+                    nameTag.color = isActive ? Color.black : Color.white;
+                    nameTagBG.enabled = isActive;
+                    nameTagBG.rectTransform.sizeDelta = new Vector2(nameTag.preferredWidth + 8, nameTag.preferredHeight + 6);
+
+                    break;
+                }
         }
-        if (comp is StationEntity)
+    }
+
+    public void Toggle(bool enable)
+    {
+        if (enable)
         {
-            markerType = MarkerType.station;
-
-            t_StationEnt = (StationEntity)comp;
-
-            icon_pivot.sizeDelta = Vector2.one * 10f;
-            icon.sprite = PrefabManager.marker_station;
-            icon.color = GameManager.current.team[t_StationEnt.teamID].teamColor;
-
-            nameTag.text = t_StationEnt.Name;
+            switch (markerType)
+            {
+                case MarkerType.ship:
+                    UpdateGraphics();
+                    break;
+                case MarkerType.station:
+                    UpdateGraphics();
+                    break;
+            }
         }
+        gameObject.SetActive(enable);
+    }
+
+    public Vector2 GetPosition()
+    {
+        return rect.anchoredPosition;
     }
 
     public void UpdatePosition(Vector2 position, float rotation)
@@ -62,35 +105,28 @@ public class MapMarker : MonoBehaviour
                     {
                         if (nameTag.enabled) nameTag.enabled = false;
                         icon_pivot.sizeDelta = Vector2.one * 2f;
-                        icon.sprite = PrefabManager.marker_ship_far;
+                        icon.sprite = PrefabManager.inst.marker_ship_far;
                         icon.rectTransform.rotation = Quaternion.Euler(0, 0, 0);
                     }
                     else
                     {
-                        if (!nameTag.enabled && t_Ship.pilot.important) nameTag.enabled = true;
+                        if (!nameTag.enabled && t_Ship.pilot.data.important) nameTag.enabled = true;
                         icon_pivot.sizeDelta = Vector2.one * 8f;
-                        icon.sprite = PrefabManager.marker_ship;
+                        icon.sprite = PrefabManager.inst.marker_ship;
                         icon.rectTransform.rotation = Quaternion.Euler(0, 0, rotation);
                     }
                     break;
                 }
             case MarkerType.station:
                 {
-                    if (Ship.PLAYER == null) break;
-                    float dist = (t_StationEnt.transform.position - Ship.PLAYER.transform.position).magnitude;
-                    if(dist < 100) break;
-
-                    if (dist < 1500f)
-                    {
-                        nameTag.text = $"{t_StationEnt.Name} [ {dist:0}m ]";
-                    }
-                    else
-                    {
-                        nameTag.text = $"{t_StationEnt.Name} [ {(dist * 0.001f):0.0}km ]";
-                    }
                     break;
                 }
         }
+    }
+
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        MapSystem.inst.OnStationSelected(t_Station);
     }
 }
 

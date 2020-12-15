@@ -18,8 +18,11 @@ public class CameraController : MonoBehaviour
     public CinemachineImpulseSource explosionImpulse;
     public CinemachineImpulseSource collisionImpulse;
 
+    Transform trans;
+
     private void Awake()
     {
+        trans = transform;
         current = this;
         cm_cam = GetComponent<CinemachineVirtualCamera>();
         //if (target) cm_cam.m_Follow = target;

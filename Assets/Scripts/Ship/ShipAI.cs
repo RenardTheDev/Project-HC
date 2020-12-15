@@ -29,9 +29,12 @@ public class ShipAI : MonoBehaviour
     Vector3 myPos;
     Vector3 enemyPos;
 
+    Transform camTrans;
+
     private void Awake()
     {
         trans = transform;
+        camTrans = Camera.main.transform;
 
         ship = GetComponent<Ship>();
         motor = GetComponent<ShipMotor>();
@@ -83,13 +86,13 @@ public class ShipAI : MonoBehaviour
         if (currEnemy != null)
         {
             Gizmos.color = Color.red;
-            Gizmos.DrawRay(trans.position, GetEnemyDirection());
+            Gizmos.DrawRay(transform.position, GetEnemyDirection());
         }
         Gizmos.color = Color.blue;
-        Gizmos.DrawLine(trans.position, destination);
+        Gizmos.DrawLine(transform.position, destination);
 
         Gizmos.color = Color.green;
-        Gizmos.DrawRay(trans.position, GetDestDirection());
+        Gizmos.DrawRay(transform.position, GetDestDirection());
 
         if (currEnemy != null) Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(destination, 1f);
@@ -97,23 +100,25 @@ public class ShipAI : MonoBehaviour
 
     private void LogicUpdate()
     {
-        if (!ship.isAlive) return;
+        if (!ship.isAlive || ship.isPlayer) return;
         //ObstacleCheck();
 
         myPos = trans.position;
         if (enemyTrans != null) enemyPos = enemyTrans.position;
 
+        ship.ToggleVisibility((camTrans.position - myPos).sqrMagnitude < 10000);
+
         switch (state)
         {
             case AIState.idle: 
                 {
-                    if (ship.pilot.important)
+                    if (ship.pilot.data.important)
                     {
-                        destination = ship.pilot.baseStation.positionV2 + Random.insideUnitCircle * 1000f;
+                        destination = Random.insideUnitCircle * 50f;
                     }
                     else
                     {
-                        destination = ship.pilot.baseStation.positionV2 + Random.insideUnitCircle * 1000f;
+                        destination = Random.insideUnitCircle * 100f;
                     }
                     ChangeState(AIState.roam);
                     break;

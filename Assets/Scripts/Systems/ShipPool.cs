@@ -31,7 +31,7 @@ public class ShipPool : MonoBehaviour
         {
             if (activeList[i].ship.health <= 0)
             {
-                if (activeList[i].deadTimer >= 10)
+                if (activeList[i].deadTimer >= 1)
                 {
                     HideShip(activeList[i]);
                 }
@@ -56,15 +56,7 @@ public class ShipPool : MonoBehaviour
 
     public Ship SpawnShip(Pilot pilot)
     {
-        return SpawnShip(new Vector2(pilot.saved_pos[0], pilot.saved_pos[1]), pilot.saved_pos[2], pilot);
-        /*if (GameDataManager.station_ent != null && GameDataManager.station_ent.ContainsKey(pilot.baseStation))
-        {
-            return SpawnShip(GameDataManager.station_ent[pilot.baseStation].spawn, Random.value * 360f, pilot);
-        }
-        else
-        {
-            return SpawnShip(new Vector2(pilot.saved_pos[0], pilot.saved_pos[1]), pilot.saved_pos[2], pilot);
-        }*/
+        return SpawnShip(new Vector2(pilot.data.saved_pos[0], pilot.data.saved_pos[1]), pilot.data.saved_pos[2], pilot);
     }
 
     public Ship SpawnShip(Vector2 pos, float rotation, Pilot pilot)
@@ -85,13 +77,19 @@ public class ShipPool : MonoBehaviour
         Ship s = SpawnShip(pos, rotation);
         pilot.AssignShip(s);
 
-        s.ChangeSkin(GameManager.current.team[0].GetRandomSkin(), false);
-        s.AssignPilot(GameDataManager.data.GetPilotID(pilot));
+        if (pilot.data.skinID >= GameManager.inst.team[pilot.data.teamID].teamSkins.Length) pilot.data.skinID = 0;
 
-        if (s.pilot.isPlayer)
+        s.ChangeSkin(GameManager.inst.team[pilot.data.teamID].teamSkins[pilot.data.skinID], false);
+        s.AssignPilot(pilot);
+
+        s.weap.AssignWeapon(GameManager.inst.weapons[pilot.data.weapID]);
+
+        if (s.pilot.data.isPlayer)
         {
             CameraController.current.AssignTarget(s.transform);
             PlayerUI.current.AssignTarget(s);
+
+            s.GetComponent<ShipAI>().enabled = false;
         }
         else
         {
@@ -115,7 +113,7 @@ public class ShipPool : MonoBehaviour
     {
         for (int i = 0; i < activeList.Count; i++)
         {
-            if(activeList[i].ship.pilotID == GameDataManager.data.GetPilotID(pilot))
+            if(activeList[i].ship.pilotID == pilot.data.ID)
             {
                 activeList[i].ship.Hide();
                 break;
@@ -163,7 +161,7 @@ public class ShipPool : MonoBehaviour
 
     ShipPoolEntry CreateNewShip()
     {
-        var go = Instantiate(PrefabManager.ship);
+        var go = Instantiate(PrefabManager.inst.ship);
         ShipPoolEntry p = new ShipPoolEntry(go);
 
         GlobalEvents.ShipPoolCreatedNewInstance(p.ship);
@@ -177,7 +175,7 @@ public class ShipPool : MonoBehaviour
     {
         for (int i = 0; i < count; i++)
         {
-            var go = Instantiate(PrefabManager.ship);
+            var go = Instantiate(PrefabManager.inst.ship);
             ShipPoolEntry p = new ShipPoolEntry(go);
 
             GlobalEvents.ShipPoolCreatedNewInstance(p.ship);
@@ -228,6 +226,7 @@ public class ShipPoolEntry
     public void Despawn()
     {
         go.SetActive(false);
+
         ship.health = 0;
         deadTimer = 0;
     }

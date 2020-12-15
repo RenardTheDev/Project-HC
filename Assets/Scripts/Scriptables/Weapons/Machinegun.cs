@@ -19,6 +19,10 @@ public class Machinegun : Weapon
     public int clip = 10;
     public int clipSize = 10;
 
+    public float autoReloadDelay = 1;
+    public float autoReloadSpeed = 5;   //rpm
+    float lastAutoReload;
+
     private void Awake()
     {
 
@@ -46,19 +50,32 @@ public class Machinegun : Weapon
                 clip = clipSize;
             }
         }
-
-        if (shooting && !reloading)
+        else
         {
-            if (owner.isAlive && Time.time > lastShot + (60f / lvld_fireRate))
+            if (shooting)
             {
-                _makeShot();
-
-                clip--;
-                shooting = false;
-                if (clip <= 0)
+                if (owner.isAlive && Time.time > lastShot + (60f / lvld_fireRate))
                 {
-                    reloading = true;
-                    lastReload = Time.time;
+                    _makeShot();
+
+                    clip--;
+                    shooting = false;
+                    if (clip <= 0)
+                    {
+                        reloading = true;
+                        lastReload = Time.time;
+                    }
+                }
+            }
+            else
+            {
+                if (Time.time - lastShot > autoReloadDelay && clip < clipSize)
+                {
+                    if (Time.time - lastAutoReload > autoReloadSpeed)
+                    {
+                        clip++;
+                        lastAutoReload = Time.time;
+                    }
                 }
             }
         }
@@ -104,6 +121,8 @@ public class MachinegunEditor : Editor
         float rpm = script.fireRate;
         float dps = (dmg * rpm) / 60f;
         float ttk = 100f / dps;
+
+        script.autoReloadSpeed = script.reloadDelay / script.clipSize;
 
         EditorGUILayout.Space();
         GUILayout.Label("Base stats:");

@@ -15,6 +15,9 @@ public class ShipWeapon : MonoBehaviour
     public float skill_cd;
     public float skill_cd_mult = 1f;
 
+    bool weaponEquipped;
+    bool skillEquipped;
+
     private void Awake()
     {
         ship = GetComponent<Ship>();
@@ -43,6 +46,8 @@ public class ShipWeapon : MonoBehaviour
         skill.OnAssigned(ship);
 
         if (ship.isPlayer) GlobalEvents.PlayerSkillChanged(skill);
+
+        skillEquipped = true;
     }
 
     public void AssignWeapon(Weapon newWeapon)
@@ -55,6 +60,8 @@ public class ShipWeapon : MonoBehaviour
         //gun.SetLevel(ship.weapUpgrades[newWeapon.WEAPON_ID]);
 
         if (ship.isPlayer) GlobalEvents.PlayerWeaponChanged(gun);
+
+        weaponEquipped = true;
     }
 
     public void UpdateWeaponUpgrade()
@@ -64,13 +71,13 @@ public class ShipWeapon : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (gun != null)
+        if (weaponEquipped)
         {
             if (trigger) gun.Trigger();
             gun.Update();
         }
 
-        if (skill != null)
+        if (skillEquipped)
         {
             if (skill_trig && skill_cd >= 1f)
             {

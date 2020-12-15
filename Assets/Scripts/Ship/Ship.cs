@@ -21,6 +21,8 @@ public class Ship : MonoBehaviour
     public ShipMotor motor;
     public ShipAI ai;
 
+    public bool isVisible;
+
     public int equippedWeapID = 0;
 
     public string Name;
@@ -59,16 +61,28 @@ public class Ship : MonoBehaviour
         ai = GetComponent<ShipAI>();
 
         sfx_source = GetComponentInChildren<AudioSource>();
+
+        ToggleVisibility(false);
     }
 
     public void AssignPilot(int pilotID)
     {
         this.pilotID = pilotID;
-        pilot = GameDataManager.data.GetPilot(pilotID);
+        pilot = GameDataManager.GetPilot(pilotID);
 
-        Name = pilot.Name;
-        isPlayer = pilot.isPlayer;
-        teamID = pilot.teamID;
+        Name = pilot.data.Name;
+        isPlayer = pilot.data.isPlayer;
+        teamID = pilot.data.teamID;
+    }
+
+    public void AssignPilot(Pilot pilot)
+    {
+        pilotID = pilot.data.ID;
+        this.pilot = pilot;
+
+        Name = pilot.data.Name;
+        isPlayer = pilot.data.isPlayer;
+        teamID = pilot.data.teamID;
     }
 
     public void ChangeSkin(Sprite newSkin, bool flipY)
@@ -79,10 +93,22 @@ public class Ship : MonoBehaviour
 
     public void OnSpawned()
     {
-        if (pilot.isPlayer)
+        if (pilot.data.isPlayer)
         {
             PLAYER = this;
+            ai.ToggleAI(false);
+            ToggleVisibility(true);
         }
+        onShipSpawned?.Invoke();
+    }
+
+    public void ToggleVisibility(bool enable)
+    {
+        if (isVisible == enable) return;
+
+        spr.enabled = enable;
+        sfx_source.enabled = enable;
+        isVisible = enable;
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -124,13 +150,9 @@ public class Ship : MonoBehaviour
         }
     }
 
-    public Vector2 myVelocity;
-
     private void FixedUpdate()
     {
-        myVelocity = rig.velocity;
-
-        if (health <= 0 || health > 20f) return;
+        if (health <= 0 || health > 20f && isVisible) return;
 
         if (health <= 20f)
         {
@@ -246,6 +268,12 @@ public class Ship : MonoBehaviour
         onShipKilled?.Invoke(dmg);
         GlobalEvents.ShipKilled(dmg);
     }
+    public event Action onShipSpawned;
+
+    public event Action onBoostReady;
+    public void OnBoostReady() { onBoostReady?.Invoke(); }
+    public event Action onBoostUsed;
+    public void OnBoostUsed() { onBoostUsed?.Invoke(); }
 }
 
 public struct Damage

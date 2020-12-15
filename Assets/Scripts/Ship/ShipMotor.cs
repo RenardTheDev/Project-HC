@@ -8,26 +8,59 @@ public class ShipMotor : MonoBehaviour
     Ship ship;
     Rigidbody2D rig;
 
-    private void Awake()
-    {
-        ship = GetComponent<Ship>();
-        rig = GetComponent<Rigidbody2D>();
-    }
 
     [Header("Params")]
     public float accel = 10f;
-    public float maxSpeed = 50f;
+    public float maxSpeed = 20f;
 
     //--- controls ---
     public Vector2 move;
     public Vector2 aim;
 
+    // booster //
+    public float boostPower = 10;
+    public float boost = 0;
+    public float boostConsumeRate = 0.1f;
+    public float boostRestoreRate = 0.1f;
+    public bool boosting=false;
+    public bool boostReady=false;
+
+    // CACHE //
+    Transform trans;
+    public Vector2 velocity;
+    public float veloMagnitude;
+
+    private void Awake()
+    {
+        trans = transform;
+        ship = GetComponent<Ship>();
+        rig = GetComponent<Rigidbody2D>();
+    }
+
     private void Update()
     {
         if (ship.isPlayer)
         {
-            move = PlayerInputs._move;
+            if (boosting)
+            {
+                if (PlayerInputs._move.sqrMagnitude > 0.01f)
+                {
+                    move = PlayerInputs._move.normalized;
+                }
+                else
+                {
+                    if (move.sqrMagnitude < 0.01f)
+                    {
+                        move = trans.up;
+                    }
+                }
+            }
+            else
+            {
+                move = PlayerInputs._move;
+            }
             aim = PlayerInputs._aim;
+            if (PlayerInputs._accel == bindState.down || PlayerInputs._accel == bindState.hold) UseBoost();
         }
     }
 
@@ -39,67 +72,91 @@ public class ShipMotor : MonoBehaviour
     public float turnSmoothVelocity;
     //public float lastAimed;
     public bool rotateToMovement;
+
+    float lastUpdate;
+
     private void FixedUpdate()
     {
-        if (ship.isPlayer && SettingsUI.current.settings.useNewControls)
-        {
-            rotationTarget = rotateToMovement ? move : aim;
-            if (rotationTarget.magnitude > 0.1f)
-            {
-                if (rotateToMovement)
-                {
-                    rotationTargetNormal = rotationTarget.normalized;
-                    targetAngle = Mathf.Atan2(-rotationTargetNormal.x, rotationTargetNormal.y) * Mathf.Rad2Deg;
-                    angle = Mathf.SmoothDampAngle(transform.eulerAngles.z, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
-                }
-                else
-                {
-                    rotationTargetNormal = rotationTarget.normalized;
-                    angle = Mathf.Atan2(-rotationTargetNormal.x, rotationTargetNormal.y) * Mathf.Rad2Deg;
-                }
-            }
+        if (!ship.isAlive) return;
 
-            if (aim.magnitude > 0.1f)
+        if (!ship.isVisible)
+        {
+            if (lastUpdate > Time.time - 1)
             {
-                rotateToMovement = false;
+                return;
+            }
+        }
+        lastUpdate = Time.time;
+
+        if (aim.sqrMagnitude > 0.01f && !boosting)
+        {
+            rotateToMovement = false;
+        }
+        else
+        {
+            rotateToMovement = true;
+        }
+
+        rotationTarget = rotateToMovement ? move : aim;
+        if (rotationTarget.sqrMagnitude > 0.01f)
+        {
+            if (rotateToMovement)
+            {
+                rotationTargetNormal = rotationTarget.normalized;
+                targetAngle = Mathf.Atan2(-rotationTargetNormal.x, rotationTargetNormal.y) * Mathf.Rad2Deg;
+                angle = Mathf.SmoothDampAngle(trans.eulerAngles.z, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
             }
             else
             {
-                rotateToMovement = true;
+                rotationTargetNormal = rotationTarget.normalized;
+                angle = Mathf.Atan2(-rotationTargetNormal.x, rotationTargetNormal.y) * Mathf.Rad2Deg;
             }
 
-            transform.rotation = Quaternion.Euler(0, 0, angle);
-            if (move.magnitude > 0.1f)
+            rig.MoveRotation(angle);
+        }
+
+        if (move.sqrMagnitude > 0.01f)
+        {
+            if (boosting)
             {
-                if (rig.velocity.magnitude < maxSpeed)
-                {
-                    rig.AddForce(move * accel, ForceMode2D.Impulse);
-                }
-                else
-                {
-                    rig.AddForce((move + rig.velocity.normalized) * accel, ForceMode2D.Impulse);
-                }
+                rig.drag = rig.velocity.sqrMagnitude > Mathf.Pow(maxSpeed * boostPower, 2) ? 10 : 1;
+                rig.AddForce(move * accel * boostPower, ForceMode2D.Impulse);
+            }
+            else
+            {
+                rig.drag = rig.velocity.sqrMagnitude > Mathf.Pow(maxSpeed, 2) ? 10 : 1;
+                rig.AddForce(move * accel, ForceMode2D.Impulse);
+            }
+        }
+
+        velocity = rig.velocity;
+        veloMagnitude = velocity.magnitude;
+
+        if (boosting)
+        {
+            boost = Mathf.MoveTowards(boost, 0, Time.fixedDeltaTime * boostConsumeRate);
+            if (boost <= 0)
+            {
+                boosting = false;
             }
         }
         else
         {
-            if (move.magnitude > 0.1f)
+            if (!boostReady)
             {
-                rotationTargetNormal = move.normalized;
-                targetAngle = Mathf.Atan2(-rotationTargetNormal.x, rotationTargetNormal.y) * Mathf.Rad2Deg;
-                angle = Mathf.SmoothDampAngle(transform.eulerAngles.z, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
+                boost = Mathf.MoveTowards(boost, 1, Time.fixedDeltaTime * boostRestoreRate);
+                if (boost >= 1) { boostReady = true; boost = 1; ship.OnBoostReady(); }
             }
+        }
+    }
 
-            transform.rotation = Quaternion.Euler(0, 0, angle);
-
-            if (rig.velocity.magnitude < maxSpeed)
-            {
-                rig.AddRelativeForce(Vector2.up * move.magnitude * accel, ForceMode2D.Impulse);
-            }
-            else
-            {
-                rig.AddRelativeForce(Vector2.up * (move + rig.velocity.normalized).magnitude * accel, ForceMode2D.Impulse);
-            }
+    public void UseBoost()
+    {
+        if (boostReady)
+        {
+            boosting = true;
+            boostReady = false;
+            ship.OnBoostUsed();
         }
     }
 }

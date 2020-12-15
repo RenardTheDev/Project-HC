@@ -45,7 +45,7 @@ public class Preloader : MonoBehaviour
         yield return new WaitForSeconds(1f);
 
         loading = SceneManager.LoadSceneAsync(1);
-        loading.allowSceneActivation = false;
+        //loading.allowSceneActivation = false;
 
         while (!loading.isDone)
         {

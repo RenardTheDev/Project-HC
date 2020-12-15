@@ -5,18 +5,22 @@ using UnityEngine.UI;
 
 public class MapSystem : MonoBehaviour
 {
+    public static MapSystem inst;
+
     public static int maxZoomLevel = 5;
 
     public MapMoveInput mapMove;
 
+    public RectTransform selection;
     public RectTransform markers_parent;
     public Image markers_field;
 
-    public Dictionary<Ship, MapMarker> shipMarkers;
-    public Dictionary<StationEntity, MapMarker> stationMarkers;
+    public List<MapMarker> shipMarkers;
+    public List<MapMarker> stationMarkers;
 
     public Button button_mapZoomIN;
     public Button button_mapZoomOUT;
+    public Button button_warp;
 
     public Image grid;
 
@@ -28,52 +32,93 @@ public class MapSystem : MonoBehaviour
     public static int inv_zoomLevel = 2;
     public float inv_zoom;
 
+    [Header("Selection")]
+    public Text selectedInfo;
+    public Station selectedStation;
+
     private void Awake()
     {
-        shipMarkers = new Dictionary<Ship, MapMarker>();
-        stationMarkers = new Dictionary<StationEntity, MapMarker>();
+        inst = this;
+
+        shipMarkers = new List<MapMarker>();
+        stationMarkers = new List<MapMarker>();
 
         GlobalEvents.OnGameStateChanged += OnGameStateChanged;
         GlobalEvents.OnShipSpawned += OnShipSpawned;
-        GlobalEvents.OnStationSpawned += OnStationSpawned;
+        //GlobalEvents.OnStationSpawned += OnStationSpawned;
+        GlobalEvents.OnActiveStationChanged += OnActiveStationChanged;
     }
-
     private void Start()
     {
-        StartCoroutine(MapUpdate());
+        button_warp.interactable = false;
     }
 
-    private void OnStationSpawned(StationEntity stationEnt)
+    private void OnActiveStationChanged(Station oldStation, Station newStation)
     {
-        if (stationMarkers.ContainsKey(stationEnt))
+        UpdateMarkers();
+    }
+
+    public void SpawnStationMarkers()
+    {
+        for (int i = 0; i < GameDataManager.stations.Count; i++)
         {
-            ShowMarker(stationEnt);
+            SpawnStationMarker(GameDataManager.stations[i]);
         }
-        else
+    }
+
+    void SpawnStationMarker(Station station)
+    {
+        for (int i = 0; i < stationMarkers.Count; i++)
         {
-            AddStationMarker(stationEnt);
+            var stMark = stationMarkers[i];
+            if (stMark.t_Station == null)
+            {
+                stMark.Assign(station);
+                ToggleMarker(station, true);
+                return;
+            }
         }
+
+        AddStationMarker(station);
     }
 
     private void OnShipSpawned(Ship ship)
     {
-        if (shipMarkers.ContainsKey(ship))
+        /*for (int i = 0; i < shipMarkers.Count; i++)
         {
-            ShowMarker(ship);
+            var shMark = shipMarkers[i];
+            if (shMark.t_Ship == ship)
+            {
+                ToggleMarker(ship,true);
+                return;
+            }
         }
-        else
-        {
-            AddShipMarker(ship);
-        }
+
+        AddShipMarker(ship);*/
     }
 
     private void OnGameStateChanged(GameState oldState, GameState newState)
     {
-        Debug.Log($"{this}>OnGameStateChanged({oldState}, {newState})");
-
         if (newState == GameState.Pause)
         {
             OnMapUpdated();
+        }
+
+        switch (newState)
+        {
+            case GameState.MainMenu:
+                {
+                    break;
+                }
+            case GameState.Game:
+                {
+                    break;
+                }
+            case GameState.Pause:
+                {
+                    OnMapUpdated();
+                    break;
+                }
         }
     }
 
@@ -81,20 +126,18 @@ public class MapSystem : MonoBehaviour
     {
         if (GameManager.gameState != GameState.Pause) return;
 
-        markers_parent.sizeDelta = Vector2.one * GameManager.current.WorldRadius;
+        markers_parent.sizeDelta = Vector2.one * GameManager.inst.WorldRadius;
 
         mapPos += mapMove.deltaMove / inv_zoom;
-        mapPos = Vector2.ClampMagnitude(mapPos, GameManager.current.WorldRadius / zoom);
+        mapPos = Vector2.ClampMagnitude(mapPos, GameManager.inst.WorldRadius / zoom);
 
         markers_parent.anchoredPosition = mapPos * inv_zoom;
-    }
 
-    IEnumerator MapUpdate()
-    {
-        while (true)
+        if (mapMove.moving && mapMove.deltaMove.magnitude == 0 && selection.gameObject.activeSelf)
         {
-            yield return new WaitForSeconds(0.25f);
-            OnMapUpdated();
+            button_warp.interactable = false;
+            selection.gameObject.SetActive(false);
+            selectedStation = null;
         }
     }
 
@@ -105,73 +148,70 @@ public class MapSystem : MonoBehaviour
         Vector2 itemPoint;
         foreach (var m in shipMarkers)
         {
-            if (m.Key.isAlive)
+            if (m.t_Ship.isAlive)
             {
-                itemPoint = ((Vector2)m.Key.transform.position - GameManager.current.WorldCenter) / zoom;
-                m.Value.UpdatePosition(itemPoint, m.Key.transform.eulerAngles.z);
+                itemPoint = ((Vector2)m.t_Ship.transform.position - GameManager.inst.WorldCenter) / zoom;
+                m.UpdatePosition(itemPoint, m.t_Ship.transform.eulerAngles.z);
             }
             else
             {
-                if (m.Value.gameObject.activeSelf)
+                if (m.gameObject.activeSelf)
                 {
-                    HideMarker(m.Key);
+                    ToggleMarker(m.t_Ship, false);
                 }
             }
+
+            m.UpdateGraphics();
         }
 
         foreach (var m in stationMarkers)
         {
-            itemPoint = ((Vector2)m.Key.transform.position - GameManager.current.WorldCenter) / zoom;
-            m.Value.UpdatePosition(itemPoint, 0);
+            if (m.t_Station != null)
+            {
+                itemPoint = (m.t_Station.data.positionV2 - GameManager.inst.WorldCenter) / zoom;
+                m.UpdatePosition(itemPoint, 0);
+            }
+            else
+            {
+                ToggleMarker(m.t_Station, false);
+            }
+
+            m.UpdateGraphics();
         }
     }
 
     void AddShipMarker(Ship target)
     {
-        if (!shipMarkers.ContainsKey(target))
-        {
-            var go = Instantiate(PrefabManager.ui_mapMarker, markers_parent);
-            MapMarker mark = go.GetComponent<MapMarker>();
+        var go = Instantiate(PrefabManager.inst.ui_mapMarker, markers_parent);
+        MapMarker mark = go.GetComponent<MapMarker>();
 
-            mark.Assign(target);
-            shipMarkers.Add(target, mark);
-        }
+        mark.Assign(target);
+        shipMarkers.Add(mark);
 
         OnMapUpdated();
     }
 
-    void AddStationMarker(StationEntity target)
+    void AddStationMarker(Station target)
     {
-        if (!stationMarkers.ContainsKey(target))
-        {
-            var go = Instantiate(PrefabManager.ui_mapMarker, markers_parent);
-            MapMarker mark = go.GetComponent<MapMarker>();
+        var go = Instantiate(PrefabManager.inst.ui_mapMarker, markers_parent);
+        MapMarker mark = go.GetComponent<MapMarker>();
 
-            mark.Assign(target);
-            stationMarkers.Add(target, mark);
-        }
+        mark.Assign(target);
+        stationMarkers.Add(mark);
 
         OnMapUpdated();
     }
 
-    void ShowMarker(Ship target)
+    void ToggleMarker(Ship target, bool enable)
     {
-        if (shipMarkers.ContainsKey(target)) shipMarkers[target].gameObject.SetActive(false);
+        var mark = shipMarkers.Find(x => x.t_Ship == target);
+        mark.Toggle(enable);
     }
 
-    void HideMarker(Ship target)
+    void ToggleMarker(Station target, bool enable)
     {
-        if (shipMarkers.ContainsKey(target)) shipMarkers[target].gameObject.SetActive(false);
-    }
-
-    void ShowMarker(StationEntity target)
-    {
-        if (stationMarkers.ContainsKey(target)) stationMarkers[target].gameObject.SetActive(false);
-    }
-
-    void HideMarker(StationEntity target)
-    {
-        if (stationMarkers.ContainsKey(target)) stationMarkers[target].gameObject.SetActive(false);
+        var mark = stationMarkers.Find(x => x.t_Station == target);
+        mark.Toggle(enable);
     }
 
     public void Map_ZoomOUT()
@@ -205,7 +245,7 @@ public class MapSystem : MonoBehaviour
 
             if (zoomLevel <= 1)
             {
-                zoomLevel = 1; 
+                zoomLevel = 1;
                 button_mapZoomIN.interactable = false;
             }
 
@@ -219,11 +259,12 @@ public class MapSystem : MonoBehaviour
 
     public void Map_CenterOnPlayer()
     {
-        mapPos = ((GameManager.current.WorldCenter - (Vector2)Ship.PLAYER.transform.position) / zoom) / inv_zoom;
+        Vector2 pos = GameDataManager.stations[GameDataManager.data.currentActiveStation].data.positionV2;
+        mapPos = ((GameManager.inst.WorldCenter - pos) / zoom) / inv_zoom;
         UpdateMarkers();
     }
 
-    void OnMapUpdated()
+    public void OnMapUpdated()
     {
         inv_zoomLevel = maxZoomLevel - zoomLevel + 1;
         inv_zoom = Mathf.Pow(2, inv_zoomLevel);
@@ -231,5 +272,43 @@ public class MapSystem : MonoBehaviour
         grid.rectTransform.localScale = Vector3.one * inv_zoom;
 
         UpdateMarkers();
+    }
+
+    public void test_WarpToStation()
+    {
+        GameManager.inst.TransferToNewLocation(selectedStation);
+        GameManager.inst.TogglePause(false);
+        button_warp.interactable = false;
+        selectedStation = null;
+        selection.gameObject.SetActive(false);
+    }
+
+    public void OnStationSelected(Station target)
+    {
+        MapMarker stMarker = null;
+        for (int i = 0; i < stationMarkers.Count; i++)
+        {
+            if (stationMarkers[i].t_Station == target)
+            {
+                stMarker = stationMarkers[i];
+                break;
+            }
+        }
+        if (stMarker == null) return;
+        button_warp.interactable = target.data.ID != GameDataManager.data.currentActiveStation;
+
+        selectedStation = target;
+        selection.gameObject.SetActive(true);
+        selection.anchoredPosition = stMarker.GetPosition();
+
+        string ownerName = GameDataManager.pilots[selectedStation.data.ownerID].data.Name;
+        string fleet = $"{selectedStation.data.fleet.Count}/20";
+
+        if (selectedStation.data.fleetQueue > 0)
+        {
+            fleet += $"<color=green>(+{selectedStation.data.fleetQueue})</color>";
+        }
+
+        selectedInfo.text = $"< {ownerName} >\n {fleet}";
     }
 }

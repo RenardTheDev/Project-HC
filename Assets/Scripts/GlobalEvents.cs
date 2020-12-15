@@ -60,9 +60,15 @@ public class GlobalEvents : MonoBehaviour
     public static void CollisionEntered(object objA, object objB, float hitPower, Vector3 point) => OnCollisionEntered?.Invoke(objA, objB, hitPower, point);
 
 
+    public static event Action<Station, Station> OnActiveStationChanged;
+    public static void ActiveStationChanged(Station oldStation, Station newStation) => OnActiveStationChanged?.Invoke(oldStation, newStation);
+
     // World Creation //
     public static event Action<StationEntity> OnStationSpawned;
     public static void StationSpawned(StationEntity station) => OnStationSpawned?.Invoke(station);
+
+    public static event Action<StationEntity> OnStationDespawned;
+    public static void StationDespawned(StationEntity station) => OnStationDespawned?.Invoke(station);
 
     //---settings---
     public static event Action<bool> OnControlsChanged;
