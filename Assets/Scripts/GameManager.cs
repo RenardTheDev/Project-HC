@@ -42,7 +42,7 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
         }
 
-        PlayerUI.current.AllowLoadGame(GameDataManager.CheckForSavedGame());
+        PlayerUI.inst.AllowLoadGame(GameDataManager.CheckForSavedGame());
 
         GlobalEvents.OnShipKilled += OnShipKilled;
     }
@@ -58,7 +58,7 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        PlayerUI.current.ToggleStartScreen(true);
+        PlayerUI.inst.ToggleStartScreen(true);
     }
 
     public int maxPlayers;
@@ -93,20 +93,20 @@ public class GameManager : MonoBehaviour
     {
         if (cor_Logic != null) StopCoroutine(cor_Logic);
 
-        PlayerUI.current.ToggleControls(false);
-        PlayerUI.current.ToggleGameplayUI(false);
+        PlayerUI.inst.ToggleControls(false);
+        PlayerUI.inst.ToggleGameplayUI(false);
 
         SFXShotSystem.current.SpawnSFX(Camera.main.transform.position, 0.4f, sfx_gameOver, Camera.main.transform);
 
         yield return new WaitForSeconds(3f);
 
-        ScreenFade.curr.FadeINOUT(0, 1f, 0.25f, 1f);
+        ScreenFade.inst.FadeINOUT(0, 1f, 0.25f, 1f);
 
         yield return new WaitForSeconds(1f);
 
         ChangeGameState(GameState.MainMenu);
 
-        PlayerUI.current.ToggleStartScreen(true);
+        PlayerUI.inst.ToggleStartScreen(true);
 
         ShipPool.current.HideShips();
         AsteroidSystem.current.HideAsteroids();
@@ -121,18 +121,18 @@ public class GameManager : MonoBehaviour
                 ChangeGameState(GameState.Pause);
                 Time.timeScale = 0;
 
-                PlayerUI.current.ToggleControls(false, true);
-                PlayerUI.current.ToggleGameplayUI(false, true);
-                PlayerUI.current.TogglePauseScreen(true);
+                PlayerUI.inst.ToggleControls(false, true);
+                PlayerUI.inst.ToggleGameplayUI(false, true);
+                PlayerUI.inst.TogglePauseScreen(true);
             }
             else
             {
                 ChangeGameState(GameState.Game);
                 Time.timeScale = 1;
 
-                PlayerUI.current.ToggleControls(true, true);
-                PlayerUI.current.ToggleGameplayUI(true, true);
-                PlayerUI.current.TogglePauseScreen(false);
+                PlayerUI.inst.ToggleControls(true, true);
+                PlayerUI.inst.ToggleGameplayUI(true, true);
+                PlayerUI.inst.TogglePauseScreen(false);
             }
         }
     }
@@ -172,14 +172,60 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public float jumperLoadSpeed;
+    Coroutine jumper;
+    public void StartJumpProcess(Station station)
+    {
+        if (jumper != null)
+        {
+            InterruptJumpProcess();
+        }
+
+        jumper = StartCoroutine(JumpProcess(station));
+    }
+
+    public void InterruptJumpProcess()
+    {
+        ScreenFade.inst.CancelFader();
+        StopCoroutine(jumper);
+
+        PlayerUI.inst.jumper_msg.SetActive(false);
+    }
+
+    IEnumerator JumpProcess(Station station)
+    {
+        yield return new WaitForEndOfFrame();
+
+        float jumperLoad = 0;
+        PlayerUI.inst.jumper_msg.SetActive(true);
+        PlayerUI.inst.jumper_fill.fillAmount = jumperLoad;
+        PlayerUI.inst.jumper_label.text = "Preparing the jump...";
+
+        while (jumperLoad < 0.99f)
+        {
+            jumperLoad = Mathf.MoveTowards(jumperLoad, 1f, Time.deltaTime * jumperLoadSpeed);
+            PlayerUI.inst.jumper_fill.fillAmount = jumperLoad;
+            yield return new WaitForEndOfFrame();
+        }
+        jumperLoad = 1;
+        PlayerUI.inst.jumper_fill.fillAmount = jumperLoad;
+        PlayerUI.inst.jumper_label.text = "Performing";
+
+        ScreenFade.inst.FadeINOUT(0, 1f, 0.1f, 1f);
+        yield return new WaitForSecondsRealtime(1f);
+        TransferToNewLocation(station);
+
+        PlayerUI.inst.jumper_msg.SetActive(false);
+    }
+
     IEnumerator StartingSequence(bool newGame)
     {
-        ScreenFade.curr.FadeINOUT(0, 1f, 1f, 1f);
+        ScreenFade.inst.FadeINOUT(0, 1f, 1f, 1f);
         yield return new WaitForSecondsRealtime(1f);
 
-        PlayerUI.current.ToggleControls(true);
-        PlayerUI.current.ToggleGameplayUI(true);
-        PlayerUI.current.ToggleStartScreen(false);
+        PlayerUI.inst.ToggleControls(true);
+        PlayerUI.inst.ToggleGameplayUI(true);
+        PlayerUI.inst.ToggleStartScreen(false);
 
         if (newGame)
         {
@@ -207,12 +253,12 @@ public class GameManager : MonoBehaviour
 
     public void GoToMainMenu()
     {
-        ScreenFade.curr.FadeINOUT(0, 0f, 0.1f, 1f);
+        ScreenFade.inst.FadeINOUT(0, 0f, 0.1f, 1f);
 
-        PlayerUI.current.ToggleControls(false);
-        PlayerUI.current.ToggleGameplayUI(false);
-        PlayerUI.current.ToggleStartScreen(true);
-        PlayerUI.current.TogglePauseScreen(false);
+        PlayerUI.inst.ToggleControls(false);
+        PlayerUI.inst.ToggleGameplayUI(false);
+        PlayerUI.inst.ToggleStartScreen(true);
+        PlayerUI.inst.TogglePauseScreen(false);
 
         GameDataManager.SaveGame();
 
@@ -225,7 +271,7 @@ public class GameManager : MonoBehaviour
 
         if (cor_Logic != null) StopCoroutine(cor_Logic);
 
-        PlayerUI.current.AllowLoadGame(GameDataManager.CheckForSavedGame());
+        PlayerUI.inst.AllowLoadGame(GameDataManager.CheckForSavedGame());
     }
 
     void ChangeGameState(GameState newState)

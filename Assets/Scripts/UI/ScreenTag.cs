@@ -17,7 +17,8 @@ public class ScreenTag : MonoBehaviour
     Camera cam;
     Transform camTrans;
 
-    Vector3 pos;
+    Vector3 onScrPos;
+    Vector3 onCirclePos;
     Vector2 vp_point;   // position in viewport //
 
     protected bool isOnScreen;
@@ -59,28 +60,34 @@ public class ScreenTag : MonoBehaviour
         isOnScreen = vp_point.x > 0f && vp_point.x < 1f && vp_point.y > 0f && vp_point.y < 1f;
     }
 
+    float blend;
     public virtual void UpdatePosition()
     {
+        rt_tag.anchorMin = Vector2.zero;
+        rt_tag.anchorMax = Vector2.zero;
+
+        Vector2 dir = Vector3.zero;
         if (isOnScreen)
         {
-            rt_tag.anchorMin = Vector2.zero;
-            rt_tag.anchorMax = Vector2.zero;
-
-            pos.x = 720 * vp_point.x * PlayerUI.ScrRatio;
-            pos.y = 720 * vp_point.y;
-            rt_tag.anchoredPosition = pos;
+            blend = 1f;
         }
         else
         {
-            //Vector2 dir = (t_trans.position - Ship.PLAYER.transform.position).normalized;
-            Vector2 dir = (vp_point - Vector2.one * 0.5f).normalized;
-
-            rt_tag.anchorMin = Vector2.one * 0.5f;
-            rt_tag.anchorMax = Vector2.one * 0.5f;
-
-            pos.x = 350 * dir.x;
-            pos.y = 350 * dir.y;
-            rt_tag.anchoredPosition = pos;
+            blend = Mathf.MoveTowards(blend, 0f, Time.deltaTime * 2);
         }
+
+        // on screen //
+
+        onScrPos.x = 720 * vp_point.x * PlayerUI.ScrRatio;
+        onScrPos.y = 720 * vp_point.y;
+
+        // on circle //
+
+        vp_point.x = vp_point.x * PlayerUI.ScrRatio;
+        dir = (vp_point - (new Vector2(PlayerUI.ScrRatio, 1f) * 0.5f)).normalized;
+        onCirclePos.x = 360 * PlayerUI.ScrRatio + 350 * dir.x;
+        onCirclePos.y = 360 + 350 * dir.y;
+
+        rt_tag.anchoredPosition = Vector3.Lerp(onCirclePos, onScrPos, blend);
     }
 }

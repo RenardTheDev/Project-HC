@@ -87,7 +87,7 @@ public class ShipPool : MonoBehaviour
         if (s.pilot.data.isPlayer)
         {
             CameraController.current.AssignTarget(s.transform);
-            PlayerUI.current.AssignTarget(s);
+            PlayerUI.inst.AssignTarget(s);
 
             s.GetComponent<ShipAI>().enabled = false;
         }

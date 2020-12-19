@@ -7,16 +7,18 @@ using UnityEngine.UI;
 
 public class ScreenFade : MonoBehaviour
 {
-    public static ScreenFade curr;
+    public static ScreenFade inst;
     public Image fader;
 
     public Color fadeColor;
 
     //float fade = 1;
 
+    Coroutine fade;
+
     private void Awake()
     {
-        curr = this;
+        inst = this;
         //fade = 1;
         SetColor(1);
     }
@@ -28,17 +30,26 @@ public class ScreenFade : MonoBehaviour
 
     public void FadeIN(float delay, float time)
     {
-        StartCoroutine(FadeINCor(delay, time));
+        if (fade != null) StopCoroutine(fade);
+        fade = StartCoroutine(FadeINCor(delay, time));
     }
 
     public void FadeOUT(float delay, float time)
     {
-        StartCoroutine(FadeOUTCor(delay, time));
+        if (fade != null) StopCoroutine(fade);
+        fade = StartCoroutine(FadeOUTCor(delay, time));
     }
 
     public void FadeINOUT(float delayIN, float timeIN, float delayOUT, float timeOUT)
     {
-        StartCoroutine(FadeINOUTCor(delayIN, timeIN, delayOUT, timeOUT));
+        if (fade != null) StopCoroutine(fade);
+        fade = StartCoroutine(FadeINOUTCor(delayIN, timeIN, delayOUT, timeOUT));
+    }
+
+    public void CancelFader()
+    {
+        if (fade != null) StopCoroutine(fade);
+        SetColor(0);
     }
 
     IEnumerator FadeINCor(float delay, float time)
@@ -95,8 +106,10 @@ public class ScreenFade : MonoBehaviour
 
     IEnumerator FadeINOUTCor(float delayIN, float timeIN, float delayOUT, float timeOUT)
     {
-        yield return StartCoroutine(FadeINCor(delayIN, timeIN));
-        yield return StartCoroutine(FadeOUTCor(delayOUT, timeOUT));
+        fade = StartCoroutine(FadeINCor(delayIN, timeIN));
+        yield return fade;
+        fade = StartCoroutine(FadeOUTCor(delayOUT, timeOUT));
+        yield return fade;
     }
 
     void SetColor(float fade)

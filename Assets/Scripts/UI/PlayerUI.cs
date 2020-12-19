@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class PlayerUI : MonoBehaviour
 {
-    public static PlayerUI current;
+    public static PlayerUI inst;
     public static float ScrRatio;
 
     Camera cam;
@@ -23,12 +23,17 @@ public class PlayerUI : MonoBehaviour
     public Text combo_label;
     public Image combo_fill;
 
-    [Header("Center MSG")]
+    [Header("Messages")]
     public Text center_msg;
     public Image center_msg_bg;
     public Gradient colorRoll_gradient;
     Color colorRoll;
     float showTime;
+
+    [Space]
+    public GameObject jumper_msg;
+    public Image jumper_fill;
+    public Text jumper_label;
 
     Color epilepsiBlink;
 
@@ -44,7 +49,7 @@ public class PlayerUI : MonoBehaviour
 
     private void Awake()
     {
-        current = this;
+        inst = this;
 
         cam = Camera.main;
         camTrans = cam.transform;
@@ -138,6 +143,7 @@ public class PlayerUI : MonoBehaviour
     public Canvas ui_controls;
     public Canvas ui_startScreen;
     public Canvas ui_pauseScreen;
+    public Canvas ui_messages;
 
     [Header("Canvas groupes")]
     public CanvasGroup gr_gameplay;

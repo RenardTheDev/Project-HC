@@ -276,8 +276,10 @@ public class MapSystem : MonoBehaviour
 
     public void test_WarpToStation()
     {
-        GameManager.inst.TransferToNewLocation(selectedStation);
+        //GameManager.inst.TransferToNewLocation(selectedStation);
         GameManager.inst.TogglePause(false);
+
+        GameManager.inst.StartJumpProcess(selectedStation);
         button_warp.interactable = false;
         selectedStation = null;
         selection.gameObject.SetActive(false);
